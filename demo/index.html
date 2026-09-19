@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en" data-notes-lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frontend Slides Presenter — Keep the flow</title>
+<style>
+/* === VIEWPORT BASE === */
+/* ===========================================
+   VIEWPORT FITTING: MANDATORY BASE STYLES
+   Include this ENTIRE file in every presentation.
+   These styles ensure slides fit exactly in the viewport.
+   =========================================== */
+
+/* 1. Lock html/body to viewport */
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
+html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+
+/* 2. Each slide = exact viewport height */
+.slide {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    overflow: hidden; /* CRITICAL: Prevent ANY overflow */
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 3. Content container with flex for centering */
+.slide-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-height: 100%;
+    overflow: hidden; /* Double-protection against overflow */
+    padding: var(--slide-padding);
+}
+
+/* 4. ALL typography uses clamp() for responsive scaling */
+:root {
+    /* Titles scale from mobile to desktop */
+    --title-size: clamp(1.5rem, 5vw, 4rem);
+    --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+    --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+
+    /* Body text */
+    --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
+    --small-size: clamp(0.65rem, 1vw, 0.875rem);
+
+    /* Spacing scales with viewport */
+    --slide-padding: clamp(1rem, 4vw, 4rem);
+    --content-gap: clamp(0.5rem, 2vw, 2rem);
+    --element-gap: clamp(0.25rem, 1vw, 1rem);
+}
+
+/* 5. Cards/containers use viewport-relative max sizes */
+.card, .container, .content-box {
+    max-width: min(90vw, 1000px);
+    max-height: min(80vh, 700px);
+}
+
+/* 6. Lists auto-scale with viewport */
+.feature-list, .bullet-list {
+    gap: clamp(0.4rem, 1vh, 1rem);
+}
+
+.feature-list li, .bullet-list li {
+    font-size: var(--body-size);
+    line-height: 1.4;
+}
+
+/* 7. Grids adapt to available space */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+/* 8. Images constrained to viewport */
+img, .image-container {
+    max-width: 100%;
+    max-height: min(50vh, 400px);
+    object-fit: contain;
+}
+
+/* ===========================================
+   RESPONSIVE BREAKPOINTS
+   Aggressive scaling for smaller viewports
+   =========================================== */
+
+/* Short viewports (< 700px height) */
+@media (max-height: 700px) {
+    :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+        --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+        --h2-size: clamp(1rem, 3vw, 1.75rem);
+    }
+}
+
+/* Very short viewports (< 600px height) */
+@media (max-height: 600px) {
+    :root {
+        --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+        --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+        --title-size: clamp(1.1rem, 4vw, 2rem);
+        --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+    }
+
+    /* Hide non-essential elements */
+    .nav-dots, .keyboard-hint, .decorative {
+        display: none;
+    }
+}
+
+/* Extremely short (landscape phones, < 500px height) */
+@media (max-height: 500px) {
+    :root {
+        --slide-padding: clamp(0.4rem, 2vw, 1rem);
+        --title-size: clamp(1rem, 3.5vw, 1.5rem);
+        --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+        --body-size: clamp(0.65rem, 1vw, 0.85rem);
+    }
+}
+
+/* Narrow viewports (< 600px width) */
+@media (max-width: 600px) {
+    :root {
+        --title-size: clamp(1.25rem, 7vw, 2.5rem);
+    }
+
+    /* Stack grids vertically */
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===========================================
+   REDUCED MOTION
+   Respect user preferences
+   =========================================== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* === EDITORIAL THEME & FIXED PRESENTATION CANVAS === */
+*{box-sizing:border-box}body{margin:0;background:#171d22;color:#182c34;font-family:'Trebuchet MS','Yu Gothic','Malgun Gothic',sans-serif}html{scroll-snap-type:none}button,select{font:inherit}button,select{cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #f2bc58;outline-offset:4px}
+#viewport{position:fixed;inset:0;display:grid;place-items:center}.deck-stage{width:1600px;height:900px;position:absolute;transform-origin:center;overflow:hidden;background:#f3f0e6}.slide{position:absolute;inset:0;width:1600px;height:900px;display:none;padding:clamp(60px,4vw,70px);background:#f3f0e6}.slide.active{display:flex}.slide header,.slide footer{display:flex;justify-content:space-between;align-items:center;gap:clamp(10px,2vw,30px)}.slide header{font-size:clamp(18px,1.5vw,22px);letter-spacing:.08em;border-bottom:1px solid #182c3440;padding-bottom:clamp(18px,2vw,25px)}.slide footer{margin-top:auto;font-size:clamp(17px,1.4vw,20px);border-top:1px solid #182c3440;padding-top:clamp(18px,2vw,25px)}.brand{font-weight:bold;letter-spacing:.18em}.pill{border:1px solid currentColor;border-radius:99px;padding:clamp(5px,1vw,8px) clamp(12px,1vw,18px)}h1,h2,p{margin:0}h1,h2{font-family:Georgia,'Yu Mincho','Noto Serif CJK SC',serif;font-weight:400;letter-spacing:-.045em;line-height:1.08;overflow-wrap:anywhere}h1{font-size:clamp(82px,7vw,112px);max-width:940px}h2{font-size:clamp(68px,6vw,88px);max-width:1350px}.intro{display:grid;grid-template-columns:1.6fr 1fr;align-items:center;gap:clamp(24px,3vw,55px);flex:1}.subtitle{font-size:clamp(28px,2.5vw,36px);line-height:1.5;max-width:850px;margin-top:clamp(24px,3vw,36px)}.eyebrow{font-size:clamp(18px,1.6vw,23px);text-transform:uppercase;letter-spacing:.12em;margin-bottom:clamp(24px,3vw,34px);color:#8c442d}.orbit{width:460px;height:460px;border:1px solid #182c3440;border-radius:50%;position:relative;display:grid;place-items:center;direction:ltr}.orbit:before,.orbit:after{content:'';position:absolute;border:1px solid #182c3440;border-radius:50%;inset:60px}.orbit:after{inset:120px}.orb-core{font-family:Georgia,serif;font-size:clamp(90px,9vw,140px);color:#b85033}.word{position:absolute;background:#f3f0e6;padding:clamp(7px,1vw,12px);font-size:clamp(24px,2vw,32px);z-index:1}.word:nth-child(2){top:0;left:130px}.word:nth-child(3){right:-20px;top:130px}.word:nth-child(4){bottom:25px;right:45px}.word:nth-child(5){bottom:80px;left:-15px}.word:nth-child(6){top:120px;left:-30px}.body{flex:1;padding-top:clamp(45px,4vw,65px)}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(28px,3vw,50px);margin-top:clamp(48px,5vw,76px)}.step{border-top:2px solid currentColor;padding-top:clamp(22px,2vw,32px)}.number{font-family:Georgia,serif;font-size:clamp(44px,4vw,62px);color:#b85033}.step h3{font-size:clamp(30px,3vw,40px);margin:clamp(20px,2vw,28px) 0}.step p{font-size:clamp(25px,2vw,30px);line-height:1.55}.dark{background:#203c43;color:#f3f0e6}.dark header,.dark footer{border-color:#f3f0e640}.dark .eyebrow,.dark .number{color:#f0ba73}.windows{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(30px,3vw,55px);margin-top:clamp(36px,4vw,55px)}.window{border:1px solid #f3f0e650;padding:clamp(26px,3vw,38px);min-height:245px}.window:first-child{background:#f3f0e6;color:#203c43}.window h3{font-family:Georgia,serif;font-weight:400;font-size:clamp(38px,4vw,52px);margin:clamp(12px,2vw,22px) 0}.window p{font-size:clamp(25px,2vw,30px);line-height:1.5}.window small{font-size:clamp(17px,1.4vw,20px);letter-spacing:.12em}.closing{background:#bd573b;color:#fff3df}.closing header,.closing footer{border-color:#fff3df60}.closing .eyebrow{color:#fff3df}.closing h2{font-size:clamp(82px,8vw,116px);max-width:1100px}.closing .body{display:flex;flex-direction:column;justify-content:center;padding-top:0}.closing .subtitle{max-width:1200px}.reveal{animation:enter .6s ease both}.steps .step:nth-child(2){animation-delay:.1s}.steps .step:nth-child(3){animation-delay:.2s}@keyframes enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+/* Chinese slide copy uses a consistent Hei font; other languages retain their fonts. */
+.slide[lang="zh"] [data-text]{font-family:SimHei,'Heiti SC','Microsoft YaHei',sans-serif}
+/* === CONTROLS: EXCLUDED FROM PRESENTER SNAPSHOTS & PRINT === */
+.deck-controls{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:clamp(6px,1vw,12px);padding:clamp(7px,1vw,10px);background:#172027ee;border:1px solid #ffffff30;border-radius:12px;color:#eee;font-size:clamp(11px,1vw,14px);max-width:calc(100vw - 16px)}.deck-controls select,.deck-controls button{background:#2b3940;color:#fff;border:1px solid #ffffff30;border-radius:6px;padding:clamp(6px,1vw,9px)}.deck-controls label{white-space:nowrap}.deck-controls output{white-space:nowrap}.progress{position:fixed;bottom:0;left:0;height:3px;background:#efbd75;transition:width .3s}.slide[dir=rtl] h1,.slide[dir=rtl] h2{letter-spacing:0;line-height:1.3}.slide[dir=rtl] .eyebrow{letter-spacing:0}
+@media(max-width:600px){.deck-controls{flex-wrap:wrap;justify-content:center;width:max-content}.deck-controls .control-label{display:none}}
+@media print{@page{size:1600px 900px;margin:0}html,body{overflow:visible;height:auto;background:white}#viewport{position:static;display:block}.deck-stage{position:static;transform:none!important;width:1600px;height:auto;overflow:visible}.slide{position:relative;display:flex!important;break-after:page}.deck-controls,.progress{display:none!important}.reveal{animation:none!important}}
+</style></head>
+<body>
+<nav class="deck-controls" aria-label="Presentation controls"><label><span class="control-label" id="language-label">Slides</span> <select id="language" aria-label="Slide language"></select></label><button id="prev" aria-label="Previous slide">←</button><output id="count" aria-live="polite">01 / 04</output><button id="next" aria-label="Next slide">→</button><button id="present">Presenter ↗</button></nav>
+<main id="viewport"><div class="deck-stage" id="stage">
+<section class="slide active" id="hello"><header><span class="brand">PRESENTER / 01</span><span class="pill" data-text="tag"></span></header><div class="intro"><div><p class="eyebrow" data-text="kicker"></p><h1 class="reveal" data-text="title"></h1><p class="subtitle reveal" data-text="sub"></p></div><div class="orbit" aria-hidden="true"><span class="orb-core">P</span><span class="word">◧</span><span class="word">→</span><span class="word">00:35</span><span class="word">✎</span><span class="word">◉</span></div></div><footer><span data-text="foot"></span><span>01 / 04</span></footer><template data-presenter-notes></template></section>
+<section class="slide" id="story"><header><span class="brand">PRESENTER / 02</span><span data-text="tag"></span></header><div class="body"><p class="eyebrow" data-text="kicker"></p><h2 class="reveal" data-text="title"></h2><div class="steps"><article class="step reveal"><span class="number">01</span><h3 data-text="a"></h3><p data-text="ad"></p></article><article class="step reveal"><span class="number">02</span><h3 data-text="b"></h3><p data-text="bd"></p></article><article class="step reveal"><span class="number">03</span><h3 data-text="c"></h3><p data-text="cd"></p></article></div></div><footer><span data-text="foot"></span><span>02 / 04</span></footer><template data-presenter-notes></template></section>
+<section class="slide dark" id="room"><header><span class="brand">PRESENTER / 03</span><span data-text="tag"></span></header><div class="body"><p class="eyebrow" data-text="kicker"></p><h2 class="reveal" data-text="title"></h2><div class="windows"><article class="window reveal"><small data-text="a"></small><h3 data-text="ad"></h3><p data-text="ae"></p></article><article class="window reveal"><small data-text="b"></small><h3 data-text="bd"></h3><p data-text="be"></p></article></div></div><footer><span data-text="foot"></span><span>03 / 04</span></footer><template data-presenter-notes></template></section>
+<section class="slide closing" id="begin"><header><span class="brand">PRESENTER / 04</span><span data-text="tag"></span></header><div class="body"><p class="eyebrow" data-text="kicker"></p><h2 class="reveal" data-text="title"></h2><p class="subtitle reveal" data-text="sub"></p></div><footer><span data-text="foot"></span><span>04 / 04</span></footer><template data-presenter-notes></template></section>
+</div></main><div class="progress" aria-hidden="true"></div>
+<!-- All translations and editable notes travel inside this file. -->
+<script id="translations" type="application/json">{"en": {"ui": ["Slides", "Presenter", "Notes language"], "slides": [{"tag": "The skill", "kicker": "Frontend Slides Presenter", "title": "Keep the story in sight.", "sub": "Give your audience the slides. Keep your notes, next step, and timing in front of you.", "foot": "A presenter companion for frontend-slides"}, {"tag": "The flow", "kicker": "Why we built it", "title": "Present without losing your place.", "a": "Remember the thread", "ad": "Private notes keep your key points and transitions close.", "b": "See what comes next", "bd": "Current and next previews help you move smoothly.", "c": "Keep your pace", "cd": "A timer, slide jump, and blackout keep you in control.", "foot": "One audience window. One presenter window."}, {"tag": "Live tools", "kicker": "Guide their attention", "title": "Point to it. Draw it out.", "a": "BLUE LASER · L", "ad": "Look right here.", "ae": "Highlight a detail with a moving blue pointer, without leaving ink.", "b": "PEN · D", "bd": "Make the link visible.", "be": "Circle a detail or sketch a connection. Marks stay on that slide.", "foot": "Draw in either window · Esc returns to mouse · Clear only this slide"}, {"tag": "Get started", "kicker": "From file to live talk", "title": "Open. Separate. Present.", "sub": "Press P. Keep Presenter on your laptop. Move the slides to an extended screen, then click them and press F.", "foot": "Edit notes · Save HTML to take them with you"}], "notes": ["[00:00–00:35] OPEN\n“Good slides help the audience. But what helps the speaker?” Pause.\n\nEXPLAIN\nThis skill adds a private presenter window to frontend-slides. Your script and cues stay in front of you while the audience sees a clean slide.\n\nTRANSITION\n“Here is how it keeps the talk moving.”", "[00:35–01:15] WALK THROUGH\nPoint to each column. Notes keep the key message close. The next-slide preview prepares the transition. The timer helps you pace the talk.\n\nDEMONSTRATE\nOpen Presenter with P. Navigate once with the arrow keys. Show how both windows follow. Use B for a brief blackout when you want attention back on you. Press B again.\n\nTRANSITION\n“Sometimes we need to point, not just speak.”", "[01:15–02:00] LASER\nPress L. Move over a detail in the current preview. Explain that the audience sees the same blue pointer and no lasting ink.\n\nPEN\nPress D and circle a phrase. Move to another slide and back: the marks stay with their slide. Clear this slide to remove only its ink; notes remain. Press Esc to return to the mouse.\n\nREMEMBER\nBoth windows can draw. Ink is temporary, resets on audience reload, and is excluded from HTML and print.", "[02:00–02:40] SET UP\nUse extended desktop, not screen mirroring. Keep Presenter on the laptop; move the original slide window to the audience screen. Click that window and press F.\n\nSAVE\nEdit a note. Explain that browser storage keeps drafts and Save HTML carries the edited notes in the file. Only share the audience window online.\n\nCLOSE\n“The audience follows the idea. You keep the flow in sight.”"], "presenter": {"presenter": "Presenter", "slides": "Slides", "notesLanguage": "Notes language", "uiLanguage": "Interface language", "current": "CURRENT SLIDE", "next": "NEXT SLIDE", "notes": "SPEAKER NOTES", "jump": "Go to slide", "previous": "← Previous", "forward": "Next →", "mouse": "Mouse", "laser": "Blue laser · L", "pen": "Pen · D", "clear": "Clear this slide", "exportNotes": "Export notes", "exportHTML": "Save HTML", "screens": "Choose display", "fullscreen": "Audience fullscreen · F", "setup": "Display setup", "end": "End of presentation", "blackBadge": "Audience screen is black", "start": "Start timer", "pause": "Pause timer", "blackout": "Blackout · B", "resume": "Resume · B", "connected": "Connected", "disconnected": "Audience disconnected", "saved": "Notes saved in this browser", "unsaved": "Storage unavailable. Save HTML to keep your notes.", "reset": "Reset timer", "smaller": "Smaller notes", "larger": "Larger notes", "placeholder": "Write your speaker notes…", "navigation": "← → Navigate · Home / End · Shortcuts pause while editing.", "setupText": "Use extended desktop. Keep Presenter on your laptop. Move the original slides to the audience screen, click them and press F. Share only that window online.", "inkHelp": "L: laser. D: pen. Esc: mouse. Clear removes only this slide’s ink. Ink resets on reload and is not exported. Notes remain in the HTML source. Previews are static."}, "warnings": ["Automatic display selection is unavailable. Move the slides to the extended screen manually, click them and press F.", "Display permission was not granted. Move the slides manually, then click them and press F.", "Remote fullscreen was blocked. Click the audience window and press F, or use the browser fullscreen menu."]}, "zh": {"ui": ["幻灯片", "演讲者模式", "讲稿语言"], "slides": [{"tag": "技能介绍", "kicker": "Frontend Slides Presenter", "title": "让思路始终在眼前。", "sub": "把幻灯片交给观众，把讲稿、下一步和时间留在自己眼前。", "foot": "为 frontend-slides 添加演讲者支持"}, {"tag": "演讲节奏", "kicker": "为什么创建它", "title": "从容表达，不丢思路。", "a": "记住主线", "ad": "私人讲稿让重点和过渡随时可见。", "b": "提前看下一页", "bd": "当前页和下一页预览，让衔接更顺畅。", "c": "掌握节奏", "cd": "计时器、跳页和黑屏，让现场尽在掌握。", "foot": "一个观众窗口。一个演讲者窗口。"}, {"tag": "现场工具", "kicker": "引导注意力", "title": "指向重点。画出联系。", "a": "蓝色激光笔 · L", "ad": "请看这里。", "ae": "用移动的蓝色光点强调细节，不留下笔迹。", "b": "画笔 · D", "bd": "让联系看得见。", "be": "圈出细节，画出联系。笔迹保留在对应页面。", "foot": "两个窗口均可标注 · Esc 恢复鼠标 · 仅清除本页"}, {"tag": "开始使用", "kicker": "从文件到现场", "title": "打开。分屏。开讲。", "sub": "按 P 打开演讲者模式，留在笔记本上。将幻灯片移至扩展屏，点击后按 F。", "foot": "编辑讲稿 · 保存 HTML 随身携带"}], "notes": ["[00:00–00:35] 开场\n“好的幻灯片帮助观众，那什么来帮助演讲者？”稍作停顿。\n\n解释\n这个技能为 frontend-slides 添加私人演讲者窗口。观众看简洁的幻灯片，你看讲稿和提示。\n\n过渡\n“看看它如何帮助我们保持演讲节奏。”", "[00:35–01:15] 讲解\n依次介绍三栏：讲稿提醒重点，下一页预览帮助衔接，计时器帮助掌握节奏。\n\n演示\n按 P 打开演讲者窗口，用方向键翻一页，展示双窗口同步。按 B 暂时黑屏，让注意力回到你身上，再按 B 恢复。\n\n过渡\n“有时，我们需要指给观众看。”", "[01:15–02:00] 激光笔\n按 L，在当前页预览上移动。说明观众能看到同样的蓝色光点，不会留下笔迹。\n\n画笔\n按 D 圈出一句话。切换页面再回来，笔迹仍在原页。清除本页只删除本页笔迹，不影响讲稿。按 Esc 恢复鼠标。\n\n提醒\n两个窗口都能标注。笔迹仅在本次演示中保留，刷新观众窗口后清空，不写入 HTML 或打印内容。", "[02:00–02:40] 设置\n使用扩展桌面，不要镜像。演讲者窗口留在笔记本上，原幻灯片窗口移到观众屏幕，点击后按 F。\n\n保存\n编辑一条讲稿。说明浏览器保留草稿，保存 HTML 可携带编辑后的讲稿。线上只共享观众窗口。\n\n结束\n“观众跟随想法，你始终看得见思路。”"], "presenter": {"presenter": "演讲者模式", "slides": "幻灯片", "notesLanguage": "讲稿语言", "uiLanguage": "界面语言", "current": "当前页面", "next": "下一页", "notes": "演讲者讲稿", "jump": "跳转到页面", "previous": "← 上一页", "forward": "下一页 →", "mouse": "鼠标", "laser": "蓝色激光笔 · L", "pen": "画笔 · D", "clear": "清除本页批注", "exportNotes": "导出讲稿", "exportHTML": "保存 HTML", "screens": "选择显示器", "fullscreen": "观众全屏 · F", "setup": "双屏设置", "end": "已到最后一页", "blackBadge": "观众屏幕已黑屏", "start": "开始计时", "pause": "暂停计时", "blackout": "黑屏 · B", "resume": "恢复画面 · B", "connected": "已连接", "disconnected": "观众窗口已断开", "saved": "讲稿已保存于本浏览器", "unsaved": "存储不可用，请保存 HTML 保留讲稿。", "reset": "重置计时", "smaller": "缩小讲稿字号", "larger": "放大讲稿字号", "placeholder": "为这一页添加讲稿…", "navigation": "← → 翻页 · Home / End 首尾页 · 编辑时暂停快捷键。", "setupText": "使用扩展桌面。演讲者窗口留在笔记本上。将原幻灯片窗口移至观众屏幕，点击后按 F。线上只分享该窗口。", "inkHelp": "L：激光笔。D：画笔。Esc：鼠标。清除仅删除本页笔迹。笔迹刷新后清空，不导出。讲稿仍保留在 HTML 源码中。预览为静态画面。"}, "warnings": ["浏览器不支持自动选屏。请手动将幻灯片移至扩展屏，点击后按 F。", "未获得显示器权限。请手动移动幻灯片，点击后按 F。", "远程全屏受限。请点击观众窗口后按 F，或使用浏览器全屏菜单。"]}, "ja": {"ui": ["スライド", "発表者モード", "ノートの言語"], "slides": [{"tag": "スキル紹介", "kicker": "Frontend Slides Presenter", "title": "話の流れを、いつも手元に。", "sub": "聞き手にはスライドを。自分にはノート、次の展開、残り時間を。", "foot": "frontend-slides のための発表支援"}, {"tag": "話の流れ", "kicker": "開発した理由", "title": "迷わず、話をつなぐ。", "a": "要点を忘れない", "ad": "自分用ノートで、要点とつなぎを確認できます。", "b": "次の展開を見る", "bd": "現在と次のスライドを見て、自然につなげます。", "c": "ペースを保つ", "cd": "タイマー、ページ移動、暗転で進行を調整します。", "foot": "聞き手の画面と、発表者の画面。"}, {"tag": "実演ツール", "kicker": "注目を集める", "title": "指し示す。描いて伝える。", "a": "青いレーザー · L", "ad": "ここに注目。", "ae": "青いポインターで細部を示します。線は残りません。", "b": "ペン · D", "bd": "つながりを見せる。", "be": "大事な箇所を囲み、関係を描きます。線は各ページに残ります。", "foot": "両方の画面から描画 · Esc でマウスへ · このページだけ消去"}, {"tag": "使い始める", "kicker": "ファイルから本番へ", "title": "開く。分ける。話す。", "sub": "P で発表者画面を開いて手元に残し、スライドを拡張画面へ移動。クリックして F を押します。", "foot": "ノートを編集 · HTML に保存して持ち運ぶ"}], "notes": ["[00:00–00:35] 導入\n「良いスライドは聞き手を助けます。では、話し手を助けるものは？」と問い、一呼吸置きます。\n\n説明\nこのスキルは frontend-slides に発表者専用の画面を追加します。聞き手にはスライド、自分にはノートと進行の手がかりが見えます。\n\nつなぎ\n「話の流れをどう支えるか見てみましょう。」", "[00:35–01:15] 説明\n3つの欄を順に示します。ノートで要点を確認し、次のスライドでつなぎを準備し、タイマーでペースを調整します。\n\n実演\nP を押し、矢印キーで1ページ進めます。両画面の同期を見せます。B で暗転させ、もう一度 B で戻します。\n\nつなぎ\n「言葉だけでなく、指し示したい場面もあります。」", "[01:15–02:00] レーザー\nL を押して現在のプレビュー上を動かします。聞き手にも青い点が見え、線は残りません。\n\nペン\nD を押して文章を囲みます。別のページへ移動して戻り、線が残ることを見せます。このページの消去はノートに影響しません。Esc でマウスに戻ります。\n\n注意\nどちらの画面でも描けます。線は一時的で、聞き手の画面を再読み込みすると消え、HTML や印刷には含まれません。", "[02:00–02:40] 準備\nミラーリングではなく拡張デスクトップを使います。発表者画面を手元に残し、元のスライド画面を外部画面へ移動。クリックして F を押します。\n\n保存\nノートを編集します。下書きはブラウザーに保存され、HTML を保存すれば編集内容を持ち運べます。オンラインでは聞き手の画面だけを共有します。\n\n締め\n「聞き手は内容を追い、話し手は流れを見失いません。」"], "presenter": {"presenter": "発表者モード", "slides": "スライド", "notesLanguage": "ノートの言語", "uiLanguage": "画面の言語", "current": "現在のスライド", "next": "次のスライド", "notes": "発表者ノート", "jump": "スライドへ移動", "previous": "← 前へ", "forward": "次へ →", "mouse": "マウス", "laser": "青いレーザー · L", "pen": "ペン · D", "clear": "このページを消去", "exportNotes": "ノートを書き出す", "exportHTML": "HTML を保存", "screens": "画面を選択", "fullscreen": "聞き手側を全画面 · F", "setup": "画面の設定", "end": "最後のスライドです", "blackBadge": "聞き手の画面は暗転中", "start": "計測開始", "pause": "一時停止", "blackout": "暗転 · B", "resume": "再表示 · B", "connected": "接続済み", "disconnected": "聞き手の画面と切断", "saved": "このブラウザーに保存済み", "unsaved": "保存できません。HTML を保存してください。", "reset": "タイマーをリセット", "smaller": "文字を小さく", "larger": "文字を大きく", "placeholder": "発表者ノートを入力…", "navigation": "← → 移動 · Home / End · 編集中はショートカット停止。", "setupText": "拡張デスクトップを使います。発表者画面を手元に残し、元のスライドを外部画面へ移動。クリックして F を押します。オンラインではその画面だけを共有します。", "inkHelp": "L：レーザー。D：ペン。Esc：マウス。消去は現在のページのみ。線は再読み込みで消え、書き出されません。ノートは HTML ソースに残ります。プレビューは静止画です。"}, "warnings": ["画面の自動選択は使えません。スライドを拡張画面へ手動で移動し、クリックして F を押してください。", "画面へのアクセスが許可されませんでした。スライドを手動で移動し、クリックして F を押してください。", "遠隔の全画面表示が制限されました。聞き手の画面をクリックして F を押すか、ブラウザーの全画面メニューを使ってください。"]}, "ko": {"ui": ["슬라이드", "발표자 모드", "발표 노트 언어"], "slides": [{"tag": "스킬 소개", "kicker": "Frontend Slides Presenter", "title": "발표 흐름을 늘 눈앞에.", "sub": "청중에게는 슬라이드를, 발표자에게는 노트와 다음 단계, 시간을 보여 줍니다.", "foot": "frontend-slides를 위한 발표 도우미"}, {"tag": "발표 흐름", "kicker": "만든 이유", "title": "흐름을 놓치지 않고 말하세요.", "a": "핵심 기억하기", "ad": "개인 노트로 요점과 전환 문구를 확인하세요.", "b": "다음 내용 보기", "bd": "현재와 다음 슬라이드로 자연스럽게 이어 가세요.", "c": "속도 조절하기", "cd": "타이머, 페이지 이동, 화면 끄기로 진행을 조절하세요.", "foot": "청중 창 하나. 발표자 창 하나."}, {"tag": "실시간 도구", "kicker": "시선을 이끌기", "title": "가리키고, 그려 보세요.", "a": "파란 레이저 · L", "ad": "여기를 보세요.", "ae": "움직이는 파란 점으로 세부 내용을 강조합니다. 흔적은 남지 않습니다.", "b": "펜 · D", "bd": "관계를 보여 주세요.", "be": "중요한 부분에 동그라미를 치고 연결을 그립니다. 필기는 해당 슬라이드에 남습니다.", "foot": "두 창에서 그리기 · Esc로 마우스 전환 · 현재 페이지만 지우기"}, {"tag": "시작하기", "kicker": "파일에서 발표까지", "title": "열고, 나누고, 발표하세요.", "sub": "P로 발표자 창을 열어 노트북에 두세요. 슬라이드를 확장 화면으로 옮긴 뒤 클릭하고 F를 누르세요.", "foot": "노트 편집 · HTML로 저장해 가져가기"}], "notes": ["[00:00–00:35] 시작\n“좋은 슬라이드는 청중을 돕습니다. 그렇다면 발표자는 누가 도울까요?” 잠시 멈추세요.\n\n설명\n이 스킬은 frontend-slides에 개인 발표자 창을 더합니다. 청중은 깔끔한 슬라이드를 보고, 발표자는 노트와 진행 단서를 봅니다.\n\n전환\n“발표 흐름을 어떻게 돕는지 보겠습니다.”", "[00:35–01:15] 설명\n세 칸을 차례로 가리키세요. 노트는 핵심을, 다음 슬라이드는 전환을, 타이머는 속도 조절을 돕습니다.\n\n시연\nP로 발표자 창을 열고 방향키로 한 장 넘기세요. 두 창의 동기화를 보여 주세요. B로 잠시 화면을 끄고 다시 B로 돌아오세요.\n\n전환\n“말보다 가리키는 것이 좋을 때도 있습니다.”", "[01:15–02:00] 레이저\nL을 누르고 현재 미리보기 위에서 움직이세요. 청중에게도 같은 파란 점이 보이며 흔적은 남지 않습니다.\n\n펜\nD를 눌러 문구를 동그라미로 표시하세요. 다른 슬라이드로 갔다 돌아와 필기가 남는 것을 보여 주세요. 현재 페이지 지우기는 노트에 영향을 주지 않습니다. Esc로 마우스로 돌아오세요.\n\n기억하기\n두 창에서 그릴 수 있습니다. 필기는 일시적이며 청중 창을 새로 고치면 사라지고 HTML과 인쇄에는 포함되지 않습니다.", "[02:00–02:40] 설정\n화면 복제가 아닌 확장 데스크톱을 사용하세요. 발표자 창은 노트북에, 원래 슬라이드 창은 청중 화면에 둡니다. 청중 창을 클릭하고 F를 누르세요.\n\n저장\n노트를 편집하세요. 초안은 브라우저에 저장되고 HTML 저장으로 편집 내용을 가져갈 수 있습니다. 온라인에서는 청중 창만 공유하세요.\n\n마무리\n“청중은 생각을 따라가고, 발표자는 흐름을 놓치지 않습니다.”"], "presenter": {"presenter": "발표자 모드", "slides": "슬라이드", "notesLanguage": "노트 언어", "uiLanguage": "인터페이스 언어", "current": "현재 슬라이드", "next": "다음 슬라이드", "notes": "발표자 노트", "jump": "슬라이드로 이동", "previous": "← 이전", "forward": "다음 →", "mouse": "마우스", "laser": "파란 레이저 · L", "pen": "펜 · D", "clear": "현재 페이지 지우기", "exportNotes": "노트 내보내기", "exportHTML": "HTML 저장", "screens": "화면 선택", "fullscreen": "청중 화면 전체 화면 · F", "setup": "화면 설정", "end": "마지막 슬라이드입니다", "blackBadge": "청중 화면이 꺼져 있습니다", "start": "타이머 시작", "pause": "타이머 일시 정지", "blackout": "화면 끄기 · B", "resume": "화면 복원 · B", "connected": "연결됨", "disconnected": "청중 창 연결 끊김", "saved": "이 브라우저에 노트 저장됨", "unsaved": "저장할 수 없습니다. HTML을 저장하세요.", "reset": "타이머 초기화", "smaller": "노트 글자 축소", "larger": "노트 글자 확대", "placeholder": "발표 노트를 입력하세요…", "navigation": "← → 이동 · Home / End · 편집 중 단축키 중지.", "setupText": "확장 데스크톱을 사용하세요. 발표자 창은 노트북에 두고 원래 슬라이드 창을 청중 화면으로 옮긴 뒤 클릭하고 F를 누르세요. 온라인에서는 그 창만 공유하세요.", "inkHelp": "L: 레이저. D: 펜. Esc: 마우스. 현재 페이지만 지웁니다. 필기는 새로 고침 시 사라지고 내보내지 않습니다. 노트는 HTML 소스에 남습니다. 미리보기는 정적입니다."}, "warnings": ["자동 화면 선택을 사용할 수 없습니다. 슬라이드를 확장 화면으로 직접 옮기고 클릭한 뒤 F를 누르세요.", "화면 접근 권한이 없습니다. 슬라이드를 직접 옮기고 클릭한 뒤 F를 누르세요.", "원격 전체 화면이 차단되었습니다. 청중 창을 클릭하고 F를 누르거나 브라우저 전체 화면 메뉴를 사용하세요."]}, "es": {"ui": ["Diapositivas", "Presentador", "Idioma de las notas"], "slides": [{"tag": "La herramienta", "kicker": "Frontend Slides Presenter", "title": "Mantén el hilo a la vista.", "sub": "El público ve las diapositivas. Tú tienes las notas, el siguiente paso y el tiempo a mano.", "foot": "Un complemento para presentar con frontend-slides"}, {"tag": "El ritmo", "kicker": "Por qué lo creamos", "title": "Presenta sin perder el hilo.", "a": "Recuerda lo esencial", "ad": "Las notas privadas acercan los puntos clave y las transiciones.", "b": "Anticipa lo que viene", "bd": "Las vistas actual y siguiente facilitan el paso entre ideas.", "c": "Controla el ritmo", "cd": "Temporizador, salto de diapositiva y pantalla negra a tu alcance.", "foot": "Una ventana para el público. Otra para ti."}, {"tag": "Herramientas en vivo", "kicker": "Guía la atención", "title": "Señala. Dibuja. Explica.", "a": "LÁSER AZUL · L", "ad": "Mira aquí.", "ae": "Destaca un detalle con un punto azul móvil, sin dejar trazos.", "b": "LÁPIZ · D", "bd": "Haz visible la conexión.", "be": "Rodea un detalle o dibuja una relación. Los trazos quedan en esa diapositiva.", "foot": "Dibuja en ambas ventanas · Esc vuelve al ratón · Borra solo esta página"}, {"tag": "Para empezar", "kicker": "Del archivo a la charla", "title": "Abre. Separa. Presenta.", "sub": "Pulsa P y deja Presentador en el portátil. Mueve las diapositivas a una pantalla extendida, haz clic y pulsa F.", "foot": "Edita las notas · Guarda el HTML para llevarlas contigo"}], "notes": ["[00:00–00:35] INICIO\n«Las buenas diapositivas ayudan al público. ¿Qué ayuda a quien presenta?» Haz una pausa.\n\nEXPLICA\nEsta herramienta añade una ventana privada a frontend-slides. El público ve diapositivas claras; tú ves el guion y las indicaciones.\n\nTRANSICIÓN\n«Veamos cómo mantiene el hilo de la charla».", "[00:35–01:15] EXPLICA\nSeñala las tres columnas: notas para recordar lo esencial, vista siguiente para las transiciones y temporizador para el ritmo.\n\nDEMUESTRA\nPulsa P y avanza con las flechas. Muestra la sincronización. Pulsa B para apagar brevemente la pantalla y atraer la atención hacia ti. Pulsa B de nuevo.\n\nTRANSICIÓN\n«A veces necesitamos señalar, no solo hablar».", "[01:15–02:00] LÁSER\nPulsa L y muévete por la vista actual. El público ve el mismo punto azul, sin trazos permanentes.\n\nLÁPIZ\nPulsa D y rodea una frase. Cambia de diapositiva y vuelve: las marcas siguen ahí. Borrar esta página solo elimina sus trazos, no las notas. Pulsa Esc para volver al ratón.\n\nRECUERDA\nPuedes dibujar en ambas ventanas. Los trazos son temporales, desaparecen al recargar el público y no se exportan ni se imprimen.", "[02:00–02:40] PREPARA\nUsa escritorio extendido, sin duplicar pantallas. Deja Presentador en el portátil y mueve la ventana original al público. Haz clic y pulsa F.\n\nGUARDA\nEdita una nota. Los borradores quedan en el navegador; Guardar HTML incluye las notas editadas. En línea, comparte solo la ventana del público.\n\nCIERRE\n«El público sigue la idea. Tú mantienes el hilo a la vista»."], "presenter": {"presenter": "Presentador", "slides": "Diapositivas", "notesLanguage": "Idioma de notas", "uiLanguage": "Idioma de interfaz", "current": "DIAPOSITIVA ACTUAL", "next": "SIGUIENTE DIAPOSITIVA", "notes": "NOTAS DEL PRESENTADOR", "jump": "Ir a diapositiva", "previous": "← Anterior", "forward": "Siguiente →", "mouse": "Ratón", "laser": "Láser azul · L", "pen": "Lápiz · D", "clear": "Borrar esta página", "exportNotes": "Exportar notas", "exportHTML": "Guardar HTML", "screens": "Elegir pantalla", "fullscreen": "Público a pantalla completa · F", "setup": "Configurar pantallas", "end": "Fin de la presentación", "blackBadge": "La pantalla del público está negra", "start": "Iniciar temporizador", "pause": "Pausar temporizador", "blackout": "Pantalla negra · B", "resume": "Restaurar · B", "connected": "Conectado", "disconnected": "Público desconectado", "saved": "Notas guardadas en este navegador", "unsaved": "Sin almacenamiento. Guarda el HTML para conservar las notas.", "reset": "Reiniciar temporizador", "smaller": "Reducir texto", "larger": "Ampliar texto", "placeholder": "Escribe tus notas…", "navigation": "← → Navegar · Home / End · Atajos suspendidos al editar.", "setupText": "Usa escritorio extendido. Deja Presentador en el portátil. Mueve la ventana original al público, haz clic y pulsa F. En línea, comparte solo esa ventana.", "inkHelp": "L: láser. D: lápiz. Esc: ratón. Borra solo los trazos de esta página. Se eliminan al recargar y no se exportan. Las notas quedan en el código HTML. Las vistas previas son estáticas."}, "warnings": ["La selección automática no está disponible. Mueve los slides manualmente a la pantalla extendida, haz clic y pulsa F.", "No se concedió permiso de pantalla. Mueve los slides manualmente, haz clic y pulsa F.", "Se bloqueó la pantalla completa remota. Haz clic en la ventana del público y pulsa F, o usa el menú del navegador."]}, "fr": {"ui": ["Diapositives", "Présentateur", "Langue des notes"], "slides": [{"tag": "L’outil", "kicker": "Frontend Slides Presenter", "title": "Gardez le fil sous les yeux.", "sub": "Le public voit les diapositives. Vous gardez vos notes, la suite et le temps sous les yeux.", "foot": "Un compagnon de présentation pour frontend-slides"}, {"tag": "Le déroulé", "kicker": "Pourquoi cet outil", "title": "Présentez sans perdre le fil.", "a": "Retrouvez vos repères", "ad": "Les notes privées gardent vos points clés et vos transitions à portée de vue.", "b": "Anticipez la suite", "bd": "Les aperçus actuel et suivant facilitent les enchaînements.", "c": "Maîtrisez le rythme", "cd": "Chronomètre, saut de diapositive et écran noir vous accompagnent.", "foot": "Une fenêtre pour le public. Une pour vous."}, {"tag": "Outils en direct", "kicker": "Guidez l’attention", "title": "Montrez. Dessinez. Expliquez.", "a": "LASER BLEU · L", "ad": "Regardez ici.", "ae": "Soulignez un détail avec un point bleu mobile, sans laisser de trace.", "b": "STYLO · D", "bd": "Rendez le lien visible.", "be": "Entourez un détail ou dessinez un lien. Les traits restent sur leur diapositive.", "foot": "Dessinez dans les deux fenêtres · Esc revient à la souris · Effacement par page"}, {"tag": "Pour commencer", "kicker": "Du fichier à la scène", "title": "Ouvrez. Séparez. Présentez.", "sub": "Appuyez sur P et gardez Présentateur sur le portable. Déplacez les diapositives vers l’écran étendu, cliquez et appuyez sur F.", "foot": "Modifiez les notes · Enregistrez le HTML pour les emporter"}], "notes": ["[00:00–00:35] OUVERTURE\n« Les bonnes diapositives aident le public. Mais qui aide la personne qui présente ? » Faites une pause.\n\nEXPLIQUEZ\nCet outil ajoute une fenêtre privée à frontend-slides. Le public voit les diapositives ; vous gardez votre texte et vos repères sous les yeux.\n\nTRANSITION\n« Voyons comment garder le fil. »", "[00:35–01:15] EXPLIQUEZ\nMontrez les trois colonnes : les notes pour les points clés, l’aperçu suivant pour les transitions, le chronomètre pour le rythme.\n\nDÉMONTREZ\nAppuyez sur P puis avancez avec les flèches. Montrez la synchronisation. Appuyez sur B pour attirer l’attention sur vous, puis sur B pour revenir.\n\nTRANSITION\n« Parfois, il faut montrer plutôt que parler. »", "[01:15–02:00] LASER\nAppuyez sur L et déplacez le pointeur dans l’aperçu actuel. Le public voit le même point bleu, sans trace.\n\nSTYLO\nAppuyez sur D et entourez une phrase. Changez de page puis revenez : les traits sont conservés. Effacer cette page ne touche ni les autres pages ni les notes. Esc revient à la souris.\n\nÀ RETENIR\nLes deux fenêtres permettent de dessiner. Les traits sont temporaires, disparaissent au rechargement du public et sont exclus du HTML et de l’impression.", "[02:00–02:40] INSTALLATION\nUtilisez le bureau étendu, sans duplication. Gardez Présentateur sur le portable et déplacez la fenêtre originale vers le public. Cliquez dessus puis appuyez sur F.\n\nSAUVEGARDE\nModifiez une note. Le navigateur conserve les brouillons ; Enregistrer le HTML emporte les notes modifiées. En ligne, partagez seulement la fenêtre du public.\n\nCONCLUSION\n« Le public suit l’idée. Vous gardez le fil sous les yeux. »"], "presenter": {"presenter": "Présentateur", "slides": "Diapositives", "notesLanguage": "Langue des notes", "uiLanguage": "Langue de l’interface", "current": "DIAPOSITIVE ACTUELLE", "next": "DIAPOSITIVE SUIVANTE", "notes": "NOTES DU PRÉSENTATEUR", "jump": "Aller à la diapositive", "previous": "← Précédente", "forward": "Suivante →", "mouse": "Souris", "laser": "Laser bleu · L", "pen": "Stylo · D", "clear": "Effacer cette page", "exportNotes": "Exporter les notes", "exportHTML": "Enregistrer le HTML", "screens": "Choisir l’écran", "fullscreen": "Public en plein écran · F", "setup": "Configurer les écrans", "end": "Fin de la présentation", "blackBadge": "L’écran du public est noir", "start": "Démarrer le chrono", "pause": "Mettre en pause", "blackout": "Écran noir · B", "resume": "Rétablir · B", "connected": "Connecté", "disconnected": "Public déconnecté", "saved": "Notes enregistrées dans ce navigateur", "unsaved": "Stockage indisponible. Enregistrez le HTML pour garder les notes.", "reset": "Réinitialiser le chrono", "smaller": "Réduire le texte", "larger": "Agrandir le texte", "placeholder": "Saisissez vos notes…", "navigation": "← → Naviguer · Home / End · Raccourcis suspendus pendant la saisie.", "setupText": "Utilisez le bureau étendu. Gardez Présentateur sur le portable. Déplacez la fenêtre originale vers le public, cliquez et appuyez sur F. En ligne, partagez uniquement cette fenêtre.", "inkHelp": "L : laser. D : stylo. Esc : souris. Seuls les traits de cette page sont effacés. Ils disparaissent au rechargement et ne sont pas exportés. Les notes restent dans le code HTML. Les aperçus sont statiques."}, "warnings": ["La sélection automatique est indisponible. Déplacez les diapositives manuellement vers l’écran étendu, cliquez et appuyez sur F.", "L’accès aux écrans n’a pas été autorisé. Déplacez les diapositives manuellement, cliquez et appuyez sur F.", "Le plein écran à distance a été bloqué. Cliquez sur la fenêtre du public puis sur F, ou utilisez le menu du navigateur."]}, "de": {"ui": ["Folien", "Referentenansicht", "Sprache der Notizen"], "slides": [{"tag": "Das Werkzeug", "kicker": "Frontend Slides Presenter", "title": "Den roten Faden im Blick.", "sub": "Das Publikum sieht die Folien. Sie behalten Notizen, den nächsten Schritt und die Zeit im Blick.", "foot": "Eine Präsentationshilfe für frontend-slides"}, {"tag": "Der Ablauf", "kicker": "Warum wir es gebaut haben", "title": "Sprechen, ohne den Faden zu verlieren.", "a": "Den Kern behalten", "ad": "Private Notizen halten Kernaussagen und Übergänge bereit.", "b": "Die nächste Folie sehen", "bd": "Aktuelle und nächste Vorschau erleichtern den Übergang.", "c": "Das Tempo steuern", "cd": "Timer, Foliensprung und Schwarzbild helfen bei der Regie.", "foot": "Ein Fenster fürs Publikum. Eines für Sie."}, {"tag": "Live-Werkzeuge", "kicker": "Aufmerksamkeit lenken", "title": "Zeigen. Zeichnen. Erklären.", "a": "BLAUER LASER · L", "ad": "Schauen Sie hierher.", "ae": "Ein beweglicher blauer Punkt hebt Details hervor, ohne Spuren zu hinterlassen.", "b": "STIFT · D", "bd": "Verbindungen sichtbar machen.", "be": "Details einkreisen oder Zusammenhänge zeichnen. Markierungen bleiben auf der Folie.", "foot": "In beiden Fenstern zeichnen · Esc zur Maus · Nur diese Folie löschen"}, {"tag": "Loslegen", "kicker": "Von der Datei zum Vortrag", "title": "Öffnen. Aufteilen. Präsentieren.", "sub": "P drücken und die Referentenansicht am Laptop lassen. Folien auf den erweiterten Bildschirm ziehen, anklicken und F drücken.", "foot": "Notizen bearbeiten · Als HTML zum Mitnehmen speichern"}], "notes": ["[00:00–00:35] EINSTIEG\n„Gute Folien helfen dem Publikum. Was hilft der vortragenden Person?“ Kurz pausieren.\n\nERKLÄREN\nDieses Werkzeug ergänzt frontend-slides um ein privates Referentenfenster. Das Publikum sieht klare Folien; Sie sehen Ihren Text und Ihre Hinweise.\n\nÜBERGANG\n„So behalten wir den roten Faden.“", "[00:35–01:15] ERKLÄREN\nZeigen Sie die drei Spalten: Notizen für die Kernaussage, Vorschau für Übergänge, Timer für das Tempo.\n\nVORFÜHREN\nP drücken und mit den Pfeiltasten weitergehen. Beide Fenster folgen. Mit B kurz abdunkeln, damit das Publikum zu Ihnen schaut; erneut B drücken.\n\nÜBERGANG\n„Manchmal wollen wir etwas zeigen, nicht nur sagen.“", "[01:15–02:00] LASER\nL drücken und über die aktuelle Vorschau bewegen. Das Publikum sieht denselben blauen Punkt, ohne bleibende Spuren.\n\nSTIFT\nD drücken und einen Satz einkreisen. Folie wechseln und zurückkehren: Die Markierung bleibt. Diese Folie löschen entfernt nur ihre Linien, keine Notizen. Esc kehrt zur Maus zurück.\n\nMERKEN\nBeide Fenster erlauben Zeichnen. Linien sind vorübergehend, verschwinden beim Neuladen des Publikumsfensters und fehlen in HTML und Druck.", "[02:00–02:40] EINRICHTEN\nErweiterten Desktop statt Spiegelung verwenden. Referentenansicht am Laptop lassen, ursprüngliches Folienfenster auf den Publikumsbildschirm ziehen. Dort klicken und F drücken.\n\nSPEICHERN\nEine Notiz bearbeiten. Der Browser speichert Entwürfe; HTML speichern nimmt die bearbeiteten Notizen mit. Online nur das Publikumsfenster teilen.\n\nABSCHLUSS\n„Das Publikum folgt der Idee. Sie behalten den Ablauf im Blick.“"], "presenter": {"presenter": "Referentenansicht", "slides": "Folien", "notesLanguage": "Notizensprache", "uiLanguage": "Oberflächensprache", "current": "AKTUELLE FOLIE", "next": "NÄCHSTE FOLIE", "notes": "SPRECHNOTIZEN", "jump": "Zur Folie", "previous": "← Zurück", "forward": "Weiter →", "mouse": "Maus", "laser": "Blauer Laser · L", "pen": "Stift · D", "clear": "Diese Folie löschen", "exportNotes": "Notizen exportieren", "exportHTML": "HTML speichern", "screens": "Bildschirm wählen", "fullscreen": "Publikum im Vollbild · F", "setup": "Bildschirme einrichten", "end": "Ende der Präsentation", "blackBadge": "Publikumsbildschirm ist schwarz", "start": "Timer starten", "pause": "Timer pausieren", "blackout": "Schwarzbild · B", "resume": "Fortsetzen · B", "connected": "Verbunden", "disconnected": "Publikum getrennt", "saved": "Notizen im Browser gespeichert", "unsaved": "Speicher nicht verfügbar. HTML speichern, um Notizen zu behalten.", "reset": "Timer zurücksetzen", "smaller": "Schrift verkleinern", "larger": "Schrift vergrößern", "placeholder": "Sprechnotizen eingeben…", "navigation": "← → Navigieren · Home / End · Beim Bearbeiten keine Tastenkürzel.", "setupText": "Erweiterten Desktop nutzen. Referentenansicht am Laptop lassen. Originalfolien zum Publikumsbildschirm ziehen, anklicken und F drücken. Online nur dieses Fenster teilen.", "inkHelp": "L: Laser. D: Stift. Esc: Maus. Löschen betrifft nur diese Folie. Linien verschwinden beim Neuladen und werden nicht exportiert. Notizen bleiben im HTML-Quelltext. Vorschauen sind statisch."}, "warnings": ["Automatische Bildschirmwahl ist nicht verfügbar. Folien manuell auf den erweiterten Bildschirm ziehen, anklicken und F drücken.", "Bildschirmzugriff wurde nicht erlaubt. Folien manuell verschieben, anklicken und F drücken.", "Vollbild aus der Ferne wurde blockiert. Publikumsfenster anklicken und F drücken oder das Browsermenü nutzen."]}, "ar": {"ui": ["الشرائح", "وضع المقدّم", "لغة الملاحظات"], "slides": [{"tag": "التعريف بالأداة", "kicker": "Frontend Slides Presenter", "title": "أبقِ تسلسل الحديث أمامك.", "sub": "يرى الجمهور الشرائح، وتبقى ملاحظاتك وخطوتك التالية والوقت أمام عينيك.", "foot": "أداة مساعدة لتقديم عروض frontend-slides"}, {"tag": "تسلسل العرض", "kicker": "لماذا أنشأناها", "title": "قدّم فكرتك دون أن تفقد الخيط.", "a": "تذكّر النقاط الأساسية", "ad": "تُبقي الملاحظات الخاصة أفكارك وانتقالاتك قريبة منك.", "b": "شاهد ما يأتي لاحقًا", "bd": "تساعدك معاينة الشريحة الحالية والتالية على الانتقال بسلاسة.", "c": "اضبط الإيقاع", "cd": "مؤقّت وانتقال بين الشرائح وشاشة سوداء للتحكم في العرض.", "foot": "نافذة للجمهور. ونافذة للمقدّم."}, {"tag": "أدوات مباشرة", "kicker": "وجّه الانتباه", "title": "أشر إلى الفكرة. وارسم الرابط.", "a": "الليزر الأزرق · L", "ad": "انظر هنا.", "ae": "أبرز تفصيلًا بنقطة زرقاء متحركة دون ترك أثر.", "b": "القلم · D", "bd": "اجعل العلاقة مرئية.", "be": "ضع دائرة حول تفصيل أو ارسم رابطًا. تبقى العلامات على شريحتها.", "foot": "ارسم في النافذتين · Esc للعودة إلى الفأرة · امسح هذه الصفحة فقط"}, {"tag": "ابدأ الآن", "kicker": "من الملف إلى العرض", "title": "افتح. افصل. قدّم.", "sub": "اضغط P وأبقِ نافذة المقدّم على حاسوبك. انقل الشرائح إلى الشاشة الممتدة، ثم انقر عليها واضغط F.", "foot": "حرّر الملاحظات · احفظ HTML لأخذها معك"}], "notes": ["[00:00–00:35] البداية\n«تساعد الشرائح الجيدة الجمهور، لكن ما الذي يساعد المقدّم؟» توقّف قليلًا.\n\nاشرح\nتضيف هذه الأداة نافذة خاصة للمقدّم إلى frontend-slides. يرى الجمهور الشرائح، بينما ترى أنت النص وإشارات الانتقال.\n\nانتقال\n«لنرَ كيف نحافظ على تسلسل الحديث».", "[00:35–01:15] اشرح\nأشر إلى الأعمدة الثلاثة: الملاحظات لتذكّر الفكرة، والمعاينة التالية للانتقال، والمؤقّت لضبط الإيقاع.\n\nاعرض\nاضغط P ثم انتقل بالسهم. وضّح تزامن النافذتين. اضغط B لإظلام الشاشة وإعادة الانتباه إليك، ثم اضغط B مجددًا.\n\nانتقال\n«أحيانًا نحتاج إلى الإشارة، لا إلى الكلام فقط».", "[01:15–02:00] الليزر\nاضغط L وحرّك المؤشر فوق المعاينة الحالية. يرى الجمهور النقطة الزرقاء نفسها دون أثر دائم.\n\nالقلم\nاضغط D وضع دائرة حول عبارة. انتقل إلى شريحة أخرى ثم عد لترى العلامات. مسح هذه الصفحة يزيل خطوطها فقط ولا يمس الملاحظات. اضغط Esc للعودة إلى الفأرة.\n\nتذكّر\nيمكن الرسم في النافذتين. الخطوط مؤقتة، وتختفي عند إعادة تحميل نافذة الجمهور، ولا تُضمّن في HTML أو الطباعة.", "[02:00–02:40] الإعداد\nاستخدم سطح مكتب ممتدًا دون نسخ الشاشة. أبقِ نافذة المقدّم على حاسوبك وانقل نافذة الشرائح الأصلية إلى شاشة الجمهور، ثم انقر واضغط F.\n\nالحفظ\nحرّر ملاحظة. يحتفظ المتصفح بالمسودات، ويحمل حفظ HTML الملاحظات المعدّلة داخل الملف. عبر الإنترنت، شارك نافذة الجمهور فقط.\n\nالختام\n«يتابع الجمهور الفكرة، ويبقى تسلسل الحديث أمام عينيك»."], "presenter": {"presenter": "وضع المقدّم", "slides": "الشرائح", "notesLanguage": "لغة الملاحظات", "uiLanguage": "لغة الواجهة", "current": "الشريحة الحالية", "next": "الشريحة التالية", "notes": "ملاحظات المقدّم", "jump": "انتقل إلى الشريحة", "previous": "السابق", "forward": "التالي", "mouse": "الفأرة", "laser": "الليزر الأزرق · L", "pen": "القلم · D", "clear": "امسح هذه الصفحة", "exportNotes": "تصدير الملاحظات", "exportHTML": "حفظ HTML", "screens": "اختر الشاشة", "fullscreen": "ملء شاشة الجمهور · F", "setup": "إعداد الشاشات", "end": "نهاية العرض", "blackBadge": "شاشة الجمهور سوداء", "start": "بدء المؤقّت", "pause": "إيقاف المؤقّت مؤقتًا", "blackout": "شاشة سوداء · B", "resume": "استعادة العرض · B", "connected": "متصل", "disconnected": "انقطع اتصال الجمهور", "saved": "حُفظت الملاحظات في المتصفح", "unsaved": "التخزين غير متاح. احفظ HTML للاحتفاظ بالملاحظات.", "reset": "إعادة ضبط المؤقّت", "smaller": "تصغير النص", "larger": "تكبير النص", "placeholder": "اكتب ملاحظاتك…", "navigation": "الأسهم للتنقل · Home / End · تتوقف الاختصارات أثناء التحرير.", "setupText": "استخدم سطح مكتب ممتدًا. أبقِ نافذة المقدّم على حاسوبك وانقل الشرائح الأصلية إلى شاشة الجمهور، ثم انقر واضغط F. عبر الإنترنت، شارك تلك النافذة فقط.", "inkHelp": "L: الليزر. D: القلم. Esc: الفأرة. المسح لهذه الصفحة فقط. تختفي الخطوط عند إعادة التحميل ولا تُصدّر. تبقى الملاحظات في مصدر HTML. المعاينات ثابتة."}, "warnings": ["اختيار الشاشة تلقائيًا غير متاح. انقل الشرائح يدويًا إلى الشاشة الممتدة، ثم انقر واضغط F.", "لم يُمنح إذن الوصول إلى الشاشات. انقل الشرائح يدويًا، ثم انقر واضغط F.", "حُظر ملء الشاشة عن بُعد. انقر نافذة الجمهور واضغط F، أو استخدم قائمة المتصفح."]}, "pt": {"ui": ["Slides", "Apresentador", "Idioma das notas"], "slides": [{"tag": "A ferramenta", "kicker": "Frontend Slides Presenter", "title": "Mantenha o fio à vista.", "sub": "O público vê os slides. Você mantém as notas, o próximo passo e o tempo diante dos olhos.", "foot": "Um apoio para apresentar com frontend-slides"}, {"tag": "O fluxo", "kicker": "Por que criamos", "title": "Apresente sem perder o fio.", "a": "Lembre o essencial", "ad": "Notas privadas mantêm os pontos principais e as transições por perto.", "b": "Veja o que vem depois", "bd": "As prévias atual e seguinte ajudam nas transições.", "c": "Controle o ritmo", "cd": "Cronômetro, salto de slide e tela preta ajudam na condução.", "foot": "Uma janela para o público. Outra para você."}, {"tag": "Ferramentas ao vivo", "kicker": "Guie a atenção", "title": "Aponte. Desenhe. Explique.", "a": "LASER AZUL · L", "ad": "Olhe aqui.", "ae": "Destaque um detalhe com um ponto azul em movimento, sem deixar traços.", "b": "CANETA · D", "bd": "Torne a conexão visível.", "be": "Circule um detalhe ou desenhe uma relação. As marcas ficam naquele slide.", "foot": "Desenhe nas duas janelas · Esc volta ao mouse · Limpe só este slide"}, {"tag": "Comece agora", "kicker": "Do arquivo à apresentação", "title": "Abra. Separe. Apresente.", "sub": "Pressione P e deixe o Apresentador no notebook. Mova os slides para a tela estendida, clique e pressione F.", "foot": "Edite as notas · Salve o HTML para levá-las com você"}], "notes": ["[00:00–00:35] ABERTURA\n“Bons slides ajudam o público. Mas o que ajuda quem apresenta?” Faça uma pausa.\n\nEXPLIQUE\nEsta ferramenta adiciona uma janela privada ao frontend-slides. O público vê os slides; você vê o roteiro e as indicações.\n\nTRANSIÇÃO\n“Veja como manter o fluxo da apresentação.”", "[00:35–01:15] EXPLIQUE\nMostre as três colunas: notas para os pontos principais, próxima prévia para as transições e cronômetro para o ritmo.\n\nDEMONSTRE\nPressione P e avance com as setas. Mostre as duas janelas sincronizadas. Pressione B para escurecer a tela e trazer a atenção para você. Pressione B novamente.\n\nTRANSIÇÃO\n“Às vezes precisamos apontar, não apenas falar.”", "[01:15–02:00] LASER\nPressione L e mova sobre a prévia atual. O público vê o mesmo ponto azul, sem traços permanentes.\n\nCANETA\nPressione D e circule uma frase. Mude de slide e volte: as marcas continuam lá. Limpar este slide apaga só seus traços, não as notas. Esc volta ao mouse.\n\nLEMBRE\nÉ possível desenhar nas duas janelas. Os traços são temporários, somem ao recarregar a janela do público e não entram no HTML nem na impressão.", "[02:00–02:40] CONFIGURE\nUse a área de trabalho estendida, sem espelhamento. Deixe o Apresentador no notebook e mova a janela original para a tela do público. Clique nela e pressione F.\n\nSALVE\nEdite uma nota. O navegador guarda rascunhos; Salvar HTML leva as notas editadas no arquivo. On-line, compartilhe apenas a janela do público.\n\nENCERRE\n“O público acompanha a ideia. Você mantém o fluxo à vista.”"], "presenter": {"presenter": "Apresentador", "slides": "Slides", "notesLanguage": "Idioma das notas", "uiLanguage": "Idioma da interface", "current": "SLIDE ATUAL", "next": "PRÓXIMO SLIDE", "notes": "NOTAS DO APRESENTADOR", "jump": "Ir para o slide", "previous": "← Anterior", "forward": "Próximo →", "mouse": "Mouse", "laser": "Laser azul · L", "pen": "Caneta · D", "clear": "Limpar este slide", "exportNotes": "Exportar notas", "exportHTML": "Salvar HTML", "screens": "Escolher tela", "fullscreen": "Público em tela cheia · F", "setup": "Configurar telas", "end": "Fim da apresentação", "blackBadge": "A tela do público está preta", "start": "Iniciar cronômetro", "pause": "Pausar cronômetro", "blackout": "Tela preta · B", "resume": "Restaurar · B", "connected": "Conectado", "disconnected": "Público desconectado", "saved": "Notas salvas neste navegador", "unsaved": "Armazenamento indisponível. Salve o HTML para manter as notas.", "reset": "Reiniciar cronômetro", "smaller": "Diminuir texto", "larger": "Aumentar texto", "placeholder": "Escreva suas notas…", "navigation": "← → Navegar · Home / End · Atalhos pausados durante a edição.", "setupText": "Use a área de trabalho estendida. Deixe o Apresentador no notebook. Mova a janela original para o público, clique e pressione F. On-line, compartilhe só essa janela.", "inkHelp": "L: laser. D: caneta. Esc: mouse. Limpa apenas este slide. Os traços somem ao recarregar e não são exportados. As notas ficam no código HTML. As prévias são estáticas."}, "warnings": ["A seleção automática não está disponível. Mova os slides manualmente para a tela estendida, clique e pressione F.", "A permissão de tela não foi concedida. Mova os slides manualmente, clique e pressione F.", "A tela cheia remota foi bloqueada. Clique na janela do público e pressione F ou use o menu do navegador."]}}</script>
+<script>
+/* === LOCALIZATION & THE SINGLE NAVIGATION CONTROLLER === */
+const bankElement=document.getElementById('translations');
+const bank=JSON.parse(bankElement.textContent);
+const languages={en:'English',zh:'中文',ja:'日本語',ko:'한국어',es:'Español',fr:'Français',de:'Deutsch',ar:'العربية',pt:'Português'};
+const options=Object.entries(languages).map(([code,name])=>`<option value="${code}">${name}</option>`).join('');
+let language=bank[document.documentElement.lang]?document.documentElement.lang:'en';
+let uiLanguage=bank[document.documentElement.dataset.uiLang]?document.documentElement.dataset.uiLang:language;
+let notesLanguage=bank[document.documentElement.dataset.notesLang]?document.documentElement.dataset.notesLang:'en';
+const storageKey='presenter-skill-demo-v2:'+location.pathname;
+// Exported copies have their own identity, so saved drafts cannot replace their embedded notes.
+try{const drafts=JSON.parse(localStorage.getItem(storageKey)||'{}');for(const code of Object.keys(languages)){if(Array.isArray(drafts[code])&&drafts[code].length===4)bank[code].notes=drafts[code];}}catch{}
+function serializeBank(){bankElement.textContent=JSON.stringify(bank).replace(/</g,'\\u003c');}
+function persistNotes(){serializeBank();try{localStorage.setItem(storageKey,JSON.stringify(Object.fromEntries(Object.keys(languages).map(code=>[code,bank[code].notes]))));return true;}catch{return false;}}
+class SlidePresentation{
+ constructor(){this.slides=Array.from(document.querySelectorAll('.slide'));this.stage=document.getElementById('stage');this.currentSlide=0;this.showSlide(Math.max(0,Number(location.hash.slice(1))-1)||0);window.addEventListener('resize',()=>this.fit());this.fit();
+ document.addEventListener('keydown',e=>{if(e.isComposing||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,textarea,select,button,[contenteditable]'))return;const map={ArrowRight:1,ArrowDown:1,PageDown:1,' ':1,ArrowLeft:-1,ArrowUp:-1,PageUp:-1};if(e.key in map){e.preventDefault();this.showSlide(this.currentSlide+map[e.key]);}if(e.key==='Home'||e.key==='End'){e.preventDefault();this.showSlide(e.key==='Home'?0:3);}});
+ let start=null;this.stage.addEventListener('touchstart',e=>{start=e.touches[0].clientX;},{passive:true});this.stage.addEventListener('touchend',e=>{if(window.FrontendSlidesPresenter?.session?.inkState().mode!=='off')return;if(start!==null&&Math.abs(e.changedTouches[0].clientX-start)>45)this.showSlide(this.currentSlide+(e.changedTouches[0].clientX<start?1:-1));start=null;},{passive:true});
+ window.addEventListener('hashchange',()=>this.showSlide((Number(location.hash.slice(1))||1)-1));
+ }
+ fit(){this.stage.style.transform=`scale(${Math.min(innerWidth/1600,innerHeight/900)})`;}
+ showSlide(index){this.currentSlide=Math.max(0,Math.min(3,index));this.slides.forEach((slide,i)=>{slide.classList.toggle('active',i===this.currentSlide);slide.setAttribute('aria-hidden',i!==this.currentSlide);});document.getElementById('count').textContent=`0${this.currentSlide+1} / 04`;document.getElementById('prev').disabled=this.currentSlide===0;document.getElementById('next').disabled=this.currentSlide===3;document.querySelector('.progress').style.width=(this.currentSlide+1)*25+'%';try{history.replaceState(null,'','#'+(this.currentSlide+1));}catch{}}
+}
+const presentation=new SlidePresentation();
+function setLanguage(code){language=code;uiLanguage=code;document.documentElement.dataset.uiLang=code;document.documentElement.lang=code;document.getElementById('language').value=code;presentation.slides.forEach((slide,i)=>{slide.lang=code;slide.dir=code==='ar'?'rtl':'ltr';slide.querySelectorAll('[data-text]').forEach(el=>el.textContent=bank[code].slides[i][el.dataset.text]);});document.getElementById('language-label').textContent=bank[code].ui[0];document.getElementById('present').textContent=bank[code].ui[1]+' ↗';}
+document.getElementById('language').innerHTML=options;document.getElementById('language').onchange=e=>setLanguage(e.target.value);setLanguage(language);
+presentation.slides.forEach((slide,i)=>slide.querySelector('template').content.textContent=bank[notesLanguage].notes[i]);serializeBank();
+document.getElementById('prev').onclick=()=>presentation.showSlide(presentation.currentSlide-1);document.getElementById('next').onclick=()=>presentation.showSlide(presentation.currentSlide+1);
+window.frontendSlidesPresenterAdapter={slides:()=>presentation.slides,getIndex:()=>presentation.currentSlide,goTo:i=>presentation.showSlide(i),stage:presentation.stage,width:1600,height:900,id:'presenter-skill-demo-v2:'+location.pathname};
+</script>
+<script>
+/* === MULTILINGUAL NOTES & PRESENTER UI ===
+   The runtime calls renderPresenter synchronously after its own refresh.
+   There is no second timer writing over runtime labels. */
+window.addEventListener('DOMContentLoaded',()=>{
+ const api=window.FrontendSlidesPresenter.session;
+ const originalSave=api.saveNotes.bind(api);
+ let presenterWindow=null;
+ api.saveNotes=(index,text)=>{bank[notesLanguage].notes[index]=text;const saved=originalSave(index,text);return persistNotes()&&saved;};
+ function setNotesLanguage(code){
+  notesLanguage=code;document.documentElement.dataset.notesLang=code;
+  bank[code].notes.forEach((text,index)=>originalSave(index,text));
+  serializeBank();
+  if(presenterWindow&&!presenterWindow.closed)renderPresenter(presenterWindow,api.state());
+ }
+ function renderPresenter(child,state){
+  const doc=child.document,u=bank[uiLanguage].presenter;
+  const set=(selector,text)=>{const el=doc.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;};
+  doc.documentElement.lang=uiLanguage;doc.documentElement.dir=uiLanguage==='ar'?'rtl':'ltr';doc.title=u.presenter+' — Frontend Slides';
+  const labels={toolOff:u.mouse,toolLaser:u.laser,toolPen:u.pen,clearInk:u.clear,previous:u.previous,forward:u.forward,exportNotes:u.exportNotes,exportHTML:u.exportHTML,screens:u.screens,fullscreen:u.fullscreen,helpToggle:u.setup,end:u.end,blackBadge:u.blackBadge};
+  Object.entries(labels).forEach(([id,text])=>set('#'+id,text));
+  set('.brand strong',u.presenter);set('label[for="notes"]',u.notes);set('label[for="jump"]',u.jump);
+  set('.slides-panel > .label > span',u.current);set('.next-preview > .label',u.next);set('.navigation p',u.navigation);
+  set('#slide-language-label',u.slides);set('#note-language-label',u.notesLanguage);set('#ui-language-label',u.uiLanguage);
+  set('#timerToggle',state?.running?u.pause:u.start);set('#blank',state?.blank?u.resume:u.blackout);
+  set('#connection',state?u.connected:u.disconnected);
+  set('#saveStatus',state?.saved?u.saved:u.unsaved);
+  for(const id of Object.keys(labels))doc.getElementById(id).title=labels[id];
+  for(const [id,title] of [['timerReset',u.reset],['smaller',u.smaller],['larger',u.larger],['current',u.current],['next',u.next]])doc.getElementById(id).title=title;
+  doc.getElementById('screenList').setAttribute('aria-label',u.screens);
+  doc.querySelector('.annotation-tools').setAttribute('aria-label',u.pen);
+  const notes=doc.getElementById('notes');notes.placeholder=u.placeholder;notes.dir=notesLanguage==='ar'?'rtl':'ltr';notes.lang=notesLanguage;
+  const fields=[['slide-language',language,u.slides],['note-language',notesLanguage,u.notesLanguage],['ui-language',uiLanguage,u.uiLanguage]];
+  fields.forEach(([id,value,label])=>{const el=doc.getElementById(id);if(el){el.value=value;el.setAttribute('aria-label',label);}});
+  const help=doc.getElementById('help');
+  if(help.dataset.language!==uiLanguage){help.replaceChildren();for(const text of [u.setup,u.setupText,u.inkHelp]){const el=doc.createElement('p');el.textContent=text;help.append(el);}help.dataset.language=uiLanguage;}
+  const message=doc.getElementById('message');
+  // Remember the runtime's message key, then translate it in this same render.
+  if(message.textContent!==message.dataset.rendered)message.dataset.source=message.textContent;
+  const source=message.dataset.source||'';
+  const warnings=bank[uiLanguage].warnings;
+  let messageText=u.setupText;
+  if(source.includes('不支持自动选屏'))messageText=warnings[0];
+  else if(source.includes('未获得显示器权限'))messageText=warnings[1];
+  else if(source.includes('限制远程全屏'))messageText=warnings[2];
+  else if(source.includes('未连接'))messageText=u.disconnected;
+  message.textContent=messageText;message.dataset.rendered=messageText;
+ }
+ window.frontendSlidesPresenterAdapter.renderPresenter=renderPresenter;
+ const connect=api.connect.bind(api);
+ api.connect=child=>{
+  const connected=connect(child);if(!connected)return false;presenterWindow=child;
+  const doc=child.document;
+  if(!doc.getElementById('note-language')){
+   const controls=doc.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;align-items:center;font-size:12px';
+   for(const [id,label] of [['slide-language','slide-language-label'],['note-language','note-language-label'],['ui-language','ui-language-label']]){
+    const wrapper=doc.createElement('label');const span=doc.createElement('span');span.id=label;
+    const select=doc.createElement('select');select.id=id;select.innerHTML=options;select.style.cssText='display:block;max-width:180px;margin-top:5px';
+    wrapper.append(span,select);controls.append(wrapper);
+   }
+   doc.querySelector('.notes-panel').prepend(controls);
+  }
+  // Rebind on reconnect, so a surviving popup uses the reloaded deck's state.
+  doc.getElementById('slide-language').onchange=e=>{setLanguage(e.target.value);renderPresenter(child,api.state());};
+  doc.getElementById('note-language').onchange=e=>setNotesLanguage(e.target.value);
+  doc.getElementById('ui-language').onchange=e=>{uiLanguage=e.target.value;document.documentElement.dataset.uiLang=uiLanguage;renderPresenter(child,api.state());};
+  setNotesLanguage(notesLanguage);return true;
+ };
+ document.getElementById('present').onclick=()=>api.open();
+ setNotesLanguage(notesLanguage);
+});
+</script>
+
+<!-- frontend-slides-presenter:begin -->
+<script>
+/* Frontend Slides Presenter v2.0.0 — MIT. Zero runtime dependencies.
+ * Keep the deck's controller: mount({slides, getIndex, goTo, stage}). */
+(() => {
+  'use strict';
+  if (window.FrontendSlidesPresenter) return;
+  const VERSION = '2.0.0';
+  const hash = value => {
+    let n = 2166136261;
+    for (const c of value) n = Math.imul(n ^ c.charCodeAt(0), 16777619);
+    return (n >>> 0).toString(36);
+  };
+  const editable = target => target instanceof Element &&
+    !!target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]');
+  const read = (storage, key) => { try { return JSON.parse(window[storage].getItem(key)); } catch { return null; } };
+  const write = (storage, key, value) => { try { window[storage].setItem(key, JSON.stringify(value)); return true; } catch { return false; } };
+
+  // Shared renderer/input surface, serialized into the popup with the client.
+  // Coordinates are normalized to the authored stage, never the window or letterbox.
+  function annotationSurface(doc, getRect, send, name) {
+    const win = doc.defaultView, ns = 'http://www.w3.org/2000/svg';
+    const svg = doc.createElementNS(ns, 'svg');
+    svg.setAttribute('data-fsp-ui', 'annotations');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.cssText = 'position:fixed;z-index:2147483645;overflow:hidden;touch-action:none;user-select:none;pointer-events:none;';
+    const paths = doc.createElementNS(ns,'g'), dot = doc.createElementNS(ns,'g');
+    dot.style.filter = 'drop-shadow(0 0 8px #168cff)'; dot.style.display='none';
+    [[29,'#188fff',.16],[17,'#168cff',.4],[8,'#2ba6ff',1],[3,'#e4f7ff',1]].forEach(([r,fill,opacity]) => {
+      const circle=doc.createElementNS(ns,'circle');
+      circle.setAttribute('r',r);circle.setAttribute('fill',fill);circle.setAttribute('opacity',opacity);dot.append(circle);
+    });
+    svg.append(paths,dot);doc.body.append(svg);
+    let model = {mode:'off', index:0, strokes:[], laser:null, blank:false, width:1920,height:1080}, pointer = null, page = 0, signature = '';
+    function layout() {
+      const r=getRect();
+      svg.style.left=r.left+'px';svg.style.top=r.top+'px';svg.style.width=r.width+'px';svg.style.height=r.height+'px';
+    }
+    function release() {
+      if(pointer!==null){try{svg.releasePointerCapture(pointer);}catch{}pointer=null;}
+    }
+    function render(next) {
+      if(next.index!==model.index || next.mode!==model.mode || next.blank) release();
+      model=next;
+      svg.setAttribute('viewBox',`0 0 ${model.width} ${model.height}`);
+      svg.style.pointerEvents=model.mode==='off'||model.blank?'none':'auto';
+      svg.style.cursor=model.mode==='laser'?'none':'crosshair';
+      svg.style.visibility=model.blank?'hidden':'visible';
+      const key=model.index+':'+model.inkRevision;
+      if(key!==signature){
+        paths.replaceChildren(...model.strokes.map(points=>{
+          const path=doc.createElementNS(ns,'path');
+          // A tiny segment makes a single pen tap a visible round dot.
+          const pairs=points.map(p=>`${p[0]*model.width},${p[1]*model.height}`);
+          path.setAttribute('d','M'+pairs.join(' L')+(points.length===1?' l0.01,0':''));
+          path.setAttribute('fill','none');path.setAttribute('stroke','#168fff');
+          path.setAttribute('stroke-width','7');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');
+          return path;
+        }));
+        signature=key;
+      }
+      dot.style.display=model.mode==='laser'&&model.laser?'':'none';
+      if(model.laser)dot.setAttribute('transform',`translate(${model.laser[0]*model.width},${model.laser[1]*model.height})`);
+      layout();
+    }
+    function point(e, clamp=false){
+      const r=getRect(), x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+      if(!r.width||!r.height||(!clamp&&(x<0||x>1||y<0||y>1)))return null;
+      return [Math.max(0,Math.min(1,x)),Math.max(0,Math.min(1,y))];
+    }
+    function emit(type,p=null){send({type,point:p,index:page,source:name});}
+    function stop(e){e.preventDefault();e.stopPropagation();}
+    svg.addEventListener('pointerdown',e=>{
+      if(e.button!==0||pointer!==null)return;
+      const p=point(e);if(!p)return;
+      stop(e);page=model.index;
+      if(model.mode==='laser'){emit('laser',p);return;}
+      if(model.mode==='pen'){pointer=e.pointerId;svg.setPointerCapture(pointer);emit('start',p);}
+    });
+    svg.addEventListener('pointermove',e=>{
+      if(model.mode==='laser'){stop(e);page=model.index;emit('laser',point(e));}
+      else if(pointer===e.pointerId){stop(e);emit('move',point(e,true));}
+    });
+    const end=e=>{if(e.pointerId===pointer){stop(e);emit('end');release();}};
+    svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
+    svg.addEventListener('lostpointercapture',()=>{if(pointer!==null){emit('end');pointer=null;}});
+    svg.addEventListener('pointerleave',()=>{if(model.mode==='laser'){page=model.index;emit('laser');}});
+    svg.addEventListener('wheel',stop,{passive:false});
+    // Prevent older touch navigation handlers from treating a pen stroke as a swipe.
+    ['touchstart','touchmove','touchend','click','dblclick','contextmenu'].forEach(type=>svg.addEventListener(type,stop,{passive:false}));
+    win.addEventListener('blur',()=>{if(pointer!==null){emit('end');release();}if(model.mode==='laser'){page=model.index;emit('laser');}});
+    win.addEventListener('resize',layout);
+    return {render,layout,element:svg};
+  }
+
+  function mount(adapter) {
+    if (window.FrontendSlidesPresenter.session) return window.FrontendSlidesPresenter.session;
+    if (!adapter || typeof adapter.getIndex !== 'function' || typeof adapter.goTo !== 'function')
+      throw new Error('Presenter requires getIndex() and goTo(index) from the deck controller.');
+    const slides = () => Array.from(typeof adapter.slides === 'function' ? adapter.slides() : adapter.slides || document.querySelectorAll('.slide'));
+    const stage = typeof adapter.stage === 'string' ? document.querySelector(adapter.stage) : adapter.stage || document.querySelector('.deck-stage');
+    if (!slides().length || !stage) throw new Error('Presenter requires slides and a fixed stage.');
+    document.querySelectorAll('[data-fsp-ui]').forEach(el => el.remove());
+    document.documentElement.removeAttribute('data-fsp-presenting');
+    const initialSlides = slides();
+    const keys = initialSlides.map((slide, i) => slide.id || `slide-${i + 1}`);
+    if (new Set(keys).size !== keys.length) throw new Error('Presenter slide IDs must be unique.');
+    const deckId = adapter.id || location.pathname + ':' + document.title;
+    const storageKey = 'fsp:v1:' + deckId;
+    const sessionKey = storageKey + ':session';
+    const cached = read('localStorage', storageKey) || {};
+    const restored = read('sessionStorage', sessionKey) || {};
+    const id = restored.id || 'fsp-' + hash(deckId) + '-' + Math.random().toString(36).slice(2);
+    let revision = 0, visualRevision = 0, popup = null, blank = !!restored.blank, saved = true;
+    let running = !!restored.running, elapsed = Number(restored.elapsed) || 0;
+    let started = Number(restored.started) || Date.now();
+    let lastIndex = -1, observerTimer;
+    const notes = initialSlides.map((slide, i) => {
+      const template = slide.querySelector('template[data-presenter-notes]');
+      const source = template ? template.content.textContent.trim() : '';
+      const previous = cached[keys[i]];
+      return {id: keys[i], source, text: previous && previous.source === source && typeof previous.text === 'string' ? previous.text : source};
+    });
+    const index = () => Math.max(0, Math.min(slides().length - 1, Number(adapter.getIndex()) || 0));
+    const time = () => elapsed + (running ? Math.max(0, Date.now() - started) : 0);
+    const persist = () => write('sessionStorage', sessionKey, {id, index: index(), blank, running, elapsed, started});
+    const titles = () => slides().map((s, i) => s.dataset.presenterTitle || s.querySelector('h1,h2,h3')?.textContent.trim() || `Slide ${i + 1}`);
+
+    // Isolated chrome never participates in the authored slide layout.
+    const host = document.createElement('div');
+    host.dataset.fspUi = 'toolbar';
+    const shadow = host.attachShadow({mode: 'open'});
+    shadow.innerHTML = `<style>
+      :host{position:fixed;right:20px;bottom:20px;z-index:2147483647;font:14px system-ui;color:#fff}
+      :host([data-presenting]){opacity:0;pointer-events:none}
+      button{font:inherit;border:1px solid #64748b;border-radius:9px;padding:10px 15px;background:#17202f;color:#fff;cursor:pointer}
+      button:focus-visible{outline:3px solid #a7f3d0;outline-offset:3px}
+      #status{max-width:340px;padding:10px;background:#17202f;border-radius:8px;margin-bottom:8px}
+      #status:empty{display:none}
+      @media print{:host{display:none!important}}
+    </style><div id="status" role="status"></div><button type="button" title="Open Presenter Mode (P)">Presenter · P</button>`;
+    document.body.append(host);
+    const blackout = document.createElement('div');
+    blackout.dataset.fspUi = 'blackout';
+    blackout.setAttribute('aria-hidden', 'true');
+    blackout.style.cssText = 'position:fixed;inset:0;background:#000;z-index:2147483646;pointer-events:none;display:none';
+    document.body.append(blackout);
+    const printStyle = document.createElement('style');
+    printStyle.dataset.fspUi = 'style';
+    printStyle.textContent = ':fullscreen [data-fsp-ui="toolbar"],[data-fsp-presenting] .deck-controls,[data-fsp-presenting] .edit-hotzone,[data-fsp-presenting] .edit-toggle{display:none!important}@media print{[data-fsp-ui]{display:none!important}}';
+    document.head.append(printStyle);
+    // Native Save Page may serialize live chrome *after* this inline script.
+    // Prune again once the parser has reached those trailing nodes.
+    let boardElement = null;
+    const pruneSavedChrome = () => document.querySelectorAll('[data-fsp-ui]').forEach(el => {
+      if (el !== host && el !== blackout && el !== printStyle && el !== boardElement) el.remove();
+    });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pruneSavedChrome, {once:true});
+    else pruneSavedChrome();
+    const status = message => { shadow.getElementById('status').textContent = message; };
+    const setBlank = value => { blank = !!value; blackout.style.display = blank ? 'block' : 'none'; stroke=null; laser=null; publishInk(); persist(); };
+
+    // In-session annotations are separate from notes and exported slide content.
+    const inkPages = new Map(), inkListeners = new Map();
+    let inkMode='off', laser=null, stroke=null, inkIndex=index(), inkRevision=0;
+    const inkState = () => ({mode:inkMode,index:inkIndex,inkRevision,laser,blank,
+      strokes:inkPages.get(keys[inkIndex])||[],width:adapter.width||stage.offsetWidth||1920,height:adapter.height||stage.offsetHeight||1080});
+    const board = annotationSurface(document,()=>stage.getBoundingClientRect(),event=>inkInput(event),'audience');
+    function publishInk(){
+      const value=inkState();board.render(value);
+      for(const [child,fn] of inkListeners){
+        try{if(child.closed)inkListeners.delete(child);else fn(value);}catch{inkListeners.delete(child);}
+      }
+    }
+    function syncInkIndex(){
+      const next=index();
+      if(next!==inkIndex){inkIndex=next;stroke=null;laser=null;inkRevision++;publishInk();}
+    }
+    function inkInput(event){
+      syncInkIndex();
+      if(blank||event.index!==inkIndex)return;
+      const p=event.point;
+      if(p&&(!Array.isArray(p)||p.length!==2||!p.every(n=>Number.isFinite(n)&&n>=0&&n<=1)))return;
+      if(inkMode==='laser'&&event.type==='laser'){laser=p;publishInk();return;}
+      if(inkMode!=='pen')return;
+      if(event.type==='start'&&p&&!stroke){
+        const points=[p];let lines=inkPages.get(keys[inkIndex]);
+        if(!lines){lines=[];inkPages.set(keys[inkIndex],lines);}lines.push(points);
+        stroke={points,source:event.source};
+      }else if(stroke?.source===event.source){
+        if(event.type==='move'&&p)stroke.points.push(p);
+        else if(event.type==='end')stroke=null;
+      }else return;
+      inkRevision++;publishInk();
+    }
+    function setTool(mode){
+      if(!['off','laser','pen'].includes(mode))return;
+      syncInkIndex();inkMode=mode;stroke=null;laser=null;publishInk();
+    }
+    function clearInk(){syncInkIndex();inkPages.delete(keys[inkIndex]);stroke=null;laser=null;inkRevision++;publishInk();}
+    publishInk();
+
+    boardElement=board.element;
+    setBlank(blank);
+
+    function openPresenter() {
+      if (popup && !popup.closed) { popup.focus(); return popup; }
+      // Synchronous window.open preserves user activation, including file://.
+      popup = window.open('', id, 'popup=yes,width=1440,height=940');
+      if (!popup) { status('弹窗被阻止：请允许此页面打开弹窗，然后再次按 P。'); return null; }
+      popup.document.open();
+      popup.document.write(presenterHTML());
+      popup.document.close();
+      host.dataset.presenting = ''; document.documentElement.dataset.fspPresenting = '';
+      status('');
+      popup.focus();
+      return popup;
+    }
+
+    function updateTemplate(i) {
+      const slide = initialSlides[i];
+      let template = slide.querySelector('template[data-presenter-notes]');
+      if (!template) { template = document.createElement('template'); template.setAttribute('data-presenter-notes',''); slide.append(template); }
+      template.content.textContent = notes[i].text;
+    }
+    notes.forEach((_, i) => updateTemplate(i));
+    function saveNotes(i, text) {
+      if (!Number.isInteger(i) || !notes[i] || typeof text !== 'string') return false;
+      notes[i].text = text;
+      updateTemplate(i);
+      const data = Object.fromEntries(notes.map(n => [n.id, {source:n.source, text:n.text}]));
+      saved = write('localStorage', storageKey, data);
+      revision++;
+      return saved;
+    }
+    function download(content, type, filename) {
+      const url = URL.createObjectURL(new Blob([content], {type}));
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+    function exportNotes() {
+      download(JSON.stringify({version:1, deckId, slides:notes.map((n, i) => ({id:n.id, title:titles()[i], notes:n.text}))}, null, 2), 'application/json', 'presenter-notes.json');
+    }
+    function exportHTML() {
+      const root = document.documentElement.cloneNode(true);
+      root.removeAttribute('data-fsp-presenting');
+      root.querySelectorAll('[data-fsp-ui]').forEach(e => e.remove());
+      const copies = root.querySelectorAll('[data-fsp-slide]');
+      copies.forEach((slide, i) => {
+        slide.removeAttribute('data-fsp-slide');
+        slide.querySelectorAll('template[data-presenter-notes]').forEach(e => e.remove());
+        const template = document.createElement('template');
+        template.setAttribute('data-presenter-notes', '');
+        template.content.append(document.createTextNode(notes[i]?.text || ''));
+        slide.append(template);
+      });
+      download('<!DOCTYPE html>\n' + root.outerHTML, 'text/html', (document.title.replace(/[^\p{L}\p{N}_-]+/gu, '-') || 'slides') + '-presenter.html');
+    }
+
+    // Static, script-free snapshots: preserve CSS/body context, remove all notes and UI.
+    // Sandboxed frames prevent event handlers, links and embedded scripts from executing.
+    function snapshot(i) {
+      const source = slides()[i];
+      if (!source) return null;
+      const width = adapter.width || stage.offsetWidth || 1920;
+      const height = adapter.height || stage.offsetHeight || 1080;
+      const root = document.documentElement.cloneNode(true);
+      root.querySelectorAll('script,template,[data-fsp-ui],iframe,object,embed,.deck-controls,.edit-hotzone,.edit-toggle').forEach(el => el.remove());
+      const copyStage = root.querySelector('[data-fsp-stage]');
+      // Keep ancestry (theme classes / CSS variables), omit unrelated chrome.
+      let ancestor = copyStage;
+      while (ancestor && ancestor.parentElement && ancestor.parentElement.tagName !== 'HTML') {
+        Array.from(ancestor.parentElement.children).forEach(el => { if (el !== ancestor) el.remove(); });
+        ancestor = ancestor.parentElement;
+      }
+      root.querySelectorAll('[data-fsp-slide]').forEach((slide, n) => {
+        slide.classList.toggle('active', n === i);
+        slide.classList.toggle('visible', n === i);
+        slide.style.setProperty('visibility', n === i ? 'visible' : 'hidden', 'important');
+        slide.style.setProperty('opacity', n === i ? '1' : '0', 'important');
+        slide.style.setProperty('z-index', n === i ? '1' : '0', 'important');
+      });
+      root.querySelectorAll('video,audio').forEach(el => { el.removeAttribute('autoplay'); el.removeAttribute('controls'); });
+      root.querySelectorAll('meta[http-equiv]').forEach(el => { if (el.httpEquiv.toLowerCase() === 'refresh') el.remove(); });
+      root.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+      // Canvas pixels do not survive DOM cloning. Capture where origin rules permit it.
+      const canvases = root.querySelectorAll('canvas');
+      stage.querySelectorAll('canvas').forEach((canvas, n) => {
+        try { const img = document.createElement('img'); img.src = canvas.toDataURL(); img.style.cssText = canvas.style.cssText; img.className = canvas.className; canvases[n]?.replaceWith(img); } catch { /* Tainted canvas remains a static placeholder. */ }
+      });
+      const head = root.querySelector('head');
+      // Remove comments too: legacy decks can contain speaker-note comments.
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
+      const comments = []; while (walker.nextNode()) comments.push(walker.currentNode);
+      comments.forEach(comment => comment.remove());
+      root.querySelectorAll('base').forEach(el => el.remove());
+      const base = document.createElement('base'); base.href = document.baseURI; head.prepend(base);
+      const style = document.createElement('style');
+      style.textContent = `html,body{width:100%!important;height:100%!important;overflow:hidden!important;margin:0!important}
+        [data-fsp-stage]{position:absolute!important;left:0!important;top:0!important;width:${width}px!important;height:${height}px!important;transform-origin:0 0!important}
+        *,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}
+        .visible .reveal{opacity:1!important;transform:none!important}
+        a,button,input,video{pointer-events:none!important}`;
+      head.append(style);
+      return {html:'<!DOCTYPE html>\n' + root.outerHTML, width, height};
+    }
+
+    initialSlides.forEach(s => s.setAttribute('data-fsp-slide', ''));
+    stage.setAttribute('data-fsp-stage', '');
+    // Observe DOM changes without wrapping or replacing any upstream method.
+    const observer = new MutationObserver(records => {
+      syncInkIndex(); board.layout();
+      if (records.every(r => r.target === stage && r.type === 'attributes' && r.attributeName === 'style')) return;
+      clearTimeout(observerTimer);
+      observerTimer = setTimeout(() => { revision++; visualRevision++; }, 60);
+    });
+    observer.observe(stage, {subtree:true, attributes:true, childList:true, characterData:true});
+    const session = {
+      id, version:VERSION,
+      inkState, inkInput, setTool, clearInk,
+      subscribeInk(child, fn) { if(child.opener!==window)return; inkListeners.set(child,fn);fn(inkState()); },
+      unsubscribeInk(child) { inkListeners.delete(child); },
+      connect(child) { if (child.opener !== window) return false; popup = child; host.dataset.presenting = ''; document.documentElement.dataset.fspPresenting = ''; return true; },
+      state() {
+        const current = index(); syncInkIndex();
+        if (current !== lastIndex) { lastIndex = current; revision++; visualRevision++; persist(); }
+        return {id, revision, visualRevision, index:current, count:notes.length, titles:titles(), notes:notes.map(n => n.text), blank, running, elapsed:time(), saved};
+      },
+      goTo(i) { if (!Number.isFinite(i)) return; adapter.goTo(Math.max(0, Math.min(slides().length - 1, Math.trunc(i)))); syncInkIndex(); revision++; persist(); },
+      saveNotes, snapshot, exportNotes, exportHTML, open:openPresenter,
+      // Optional deck localization runs synchronously in the popup render cycle.
+      // Keep one owner for dynamic labels instead of competing translation timers.
+      renderPresenter(child, state) {
+        if (child.opener === window && typeof adapter.renderPresenter === 'function')
+          adapter.renderPresenter(child, state);
+      },
+      blank(value = !blank) { setBlank(value); },
+      timer(action) {
+        if (action === 'reset') { elapsed = 0; started = Date.now(); }
+        else { elapsed = time(); started = Date.now(); running = !running; }
+        persist();
+      },
+      async fullscreen(screen) {
+        if (!document.documentElement.requestFullscreen) throw new Error('当前浏览器不支持网页全屏，请使用浏览器全屏菜单。');
+        if (document.fullscreenElement && !screen) await document.exitFullscreen();
+        else await document.documentElement.requestFullscreen(screen ? {screen} : undefined);
+      }
+    };
+    window.FrontendSlidesPresenter.session = session;
+    if (Number.isInteger(restored.index)) session.goTo(restored.index);
+    shadow.querySelector('button').addEventListener('click', openPresenter);
+    window.addEventListener('pagehide', persist);
+    window.addEventListener('keydown', event => {
+      if (event.isComposing || editable(event.composedPath()[0]) || event.ctrlKey || event.metaKey || event.altKey) return;
+      const key = event.key.toLowerCase();
+      if (!['p','b','f','l','d'].includes(key) && !(key==='escape'&&inkMode!=='off')) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      if (event.repeat) return;
+      if (key === 'l') setTool(inkMode==='laser'?'off':'laser');
+      if (key === 'd') setTool(inkMode==='pen'?'off':'pen');
+      if (key === 'escape') setTool('off');
+      if (key === 'p') openPresenter();
+      if (key === 'b') session.blank();
+      if (key === 'f') session.fullscreen().catch(() => status('请使用浏览器全屏菜单，或在观众窗口按 F 重试。'));
+    }, true);
+    setInterval(() => { if (popup?.closed) { popup = null; delete host.dataset.presenting; delete document.documentElement.dataset.fspPresenting; } }, 500);
+    return session;
+  }
+
+  function presenterHTML() {
+    return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Presenter — Frontend Slides</title><style>${presenterCSS()}</style></head><body>
+      <header><div class="brand"><span class="mark">◧</span><strong>Presenter</strong><span id="connection" role="status">连接中</span></div><div class="clock-group"><span id="clock"></span><strong id="timer">00:00</strong><button id="timerToggle">开始计时</button><button id="timerReset" title="重置计时">↺</button></div></header>
+      <main><section class="slides-panel"><div class="label"><span>当前页面 · CURRENT</span><span id="counter"></span></div><div class="preview current"><iframe id="current" title="当前幻灯片预览" sandbox="allow-same-origin" tabindex="-1"></iframe><span class="badge" id="blackBadge" hidden>观众屏幕已黑屏</span></div>
+      <div class="annotation-tools" role="group" aria-label="屏幕批注"><button id="toolOff" aria-pressed="true">鼠标</button><button id="toolLaser" aria-pressed="false">◉ 蓝色激光笔 · L</button><button id="toolPen" aria-pressed="false">✎ 画笔 · D</button><button id="clearInk">清除本页批注</button></div><div class="next-row"><div class="next-preview"><div class="label">下一页 · NEXT</div><div class="preview"><iframe id="next" title="下一张幻灯片预览" sandbox="allow-same-origin" tabindex="-1"></iframe><span id="end" hidden>已到最后一页</span></div></div><div class="navigation"><label for="jump">跳转到页面</label><select id="jump"></select><div class="nav-buttons"><button id="previous" title="上一页 (←)">← 上一页</button><button id="forward" title="下一页 (→ / Space)">下一页 →</button></div><button id="blank">黑屏 · B</button><p>← → 翻页 · Home / End 首尾页<br>讲稿编辑时，快捷键暂停</p></div></div></section>
+      <section class="notes-panel"><div class="label"><label for="notes">演讲者讲稿 · NOTES</label><div><button id="smaller" title="缩小讲稿字号">A−</button><button id="larger" title="放大讲稿字号">A+</button></div></div><h1 id="slideTitle"></h1><textarea id="notes" spellcheck="false" placeholder="为这一页添加讲稿…"></textarea><div class="notes-footer"><span id="saveStatus" role="status">讲稿仅在此窗口显示</span><button id="exportNotes">导出讲稿</button><button id="exportHTML">保存 HTML</button></div></section></main>
+      <footer><div class="display-controls"><button id="screens">选择显示器</button><select id="screenList" aria-label="观众显示器" hidden></select><button id="fullscreen">观众全屏 · F</button><button id="helpToggle" aria-expanded="false">双屏设置</button></div><span id="message" role="status">本窗口留在电脑；将原 slides 窗口拖到扩展屏。</span></footer>
+      <aside id="help" hidden><strong>让观众只看到 slides</strong><ol><li>在系统显示设置中选择“扩展桌面”，关闭镜像。</li><li>将本 Presenter 窗口留在电脑；将原 slides 窗口拖到大屏。</li><li>点击大屏上的 slides，再按 F 进入全屏；回来用本窗口翻页。</li></ol><p>屏幕共享时只共享 slides 窗口。讲稿不会显示或打印在幻灯片中；带讲稿 HTML 的源码仍含讲稿。浏览器可能限制自动选屏或远程全屏。</p><p>预览是静态画面，动画、视频和交互继续在观众窗口运行。开启激光笔或画笔后，在当前页预览或观众画面操作；Esc 恢复鼠标。批注按页保留于本次演示，刷新观众窗口后清空，不写入讲稿或导出的 HTML。</p></aside>
+      <script>(${presenterClient.toString()})(${annotationSurface.toString()});<\/script></body></html>`;
+  }
+
+  function presenterCSS() {
+    return `:root{color-scheme:dark;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#e6e9ee;background:#101317}*{box-sizing:border-box}body{margin:0;height:100vh;display:flex;flex-direction:column}button,select,textarea{font:inherit;color:inherit}button,select{background:#232830;border:1px solid #3c434e;border-radius:7px;padding:9px 12px;cursor:pointer}button:hover{background:#303743}button:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #99e4c7;outline-offset:3px}button:disabled{opacity:.35;cursor:default}[hidden]{display:none!important}header{display:flex;justify-content:space-between;align-items:center;padding:17px 26px;border-bottom:1px solid #30343c;gap:12px}.brand,.clock-group{display:flex;align-items:center;gap:14px}.brand strong{font-size:19px;letter-spacing:-.5px}.mark{color:#99e4c7;font-size:26px}#connection{font-size:12px;color:#99e4c7}#connection.offline{color:#ffbd90}#clock{color:#a2abb8;font-variant-numeric:tabular-nums}#timer{font-size:26px;font-variant-numeric:tabular-nums;margin:0 6px}main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);gap:28px;padding:24px 26px}.slides-panel{min-width:0;min-height:0;display:flex;flex-direction:column}.label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;font-weight:600;letter-spacing:1.5px;color:#a7afbb;margin-bottom:12px}.preview{position:relative;aspect-ratio:16/9;background:#050607;border:1px solid #39414c;border-radius:8px;overflow:hidden}.preview iframe{display:block;width:100%;height:100%;border:0;pointer-events:none}.current{flex:1;min-height:0;aspect-ratio:auto;box-shadow:0 8px 28px #0004}.badge,#end{position:absolute;inset:0;display:grid;place-items:center;background:#000b;color:#fff;font-size:18px}.annotation-tools{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.annotation-tools button{font-size:12px;padding:8px}.annotation-tools [aria-pressed="true"]{background:#113d64;border-color:#39a9ff;color:#c6e9ff}.next-row{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:23px}.navigation{padding-top:3px;display:flex;flex-direction:column;gap:12px;min-width:0}.navigation label{color:#a7afbb;font-size:12px}.navigation select{width:100%;text-overflow:ellipsis}.nav-buttons{display:flex;gap:8px}.nav-buttons button{flex:1;white-space:nowrap}#forward{background:#9ce7c7;color:#11231b;border-color:#9ce7c7}#blank[aria-pressed="true"]{border-color:#f9bd7e;color:#f9bd7e}.navigation p{margin:0;color:#8993a2;font-size:12px;line-height:1.9}.notes-panel{display:flex;flex-direction:column;min-width:0;min-height:0;background:#191e25;border:1px solid #303943;border-radius:12px;padding:20px 22px}.notes-panel .label button{padding:5px 8px;margin-left:4px}.notes-panel h1{font-size:20px;font-weight:500;margin:5px 0 18px;line-height:1.5;overflow-wrap:anywhere}textarea{flex:1;min-height:140px;width:100%;resize:none;border:0;background:transparent;font-size:24px;line-height:1.8;padding:4px 3px;outline:none;white-space:pre-wrap}textarea::placeholder{color:#697583}.notes-footer{display:flex;align-items:center;gap:10px;padding-top:15px;border-top:1px solid #343c47}.notes-footer span{flex:1;font-size:11px;color:#9ca9b8}.notes-footer button{font-size:12px;padding:8px}footer{display:flex;gap:16px;align-items:center;padding:14px 26px;border-top:1px solid #30343c;color:#99a4b3;font-size:12px}.display-controls{display:flex;gap:8px;flex-wrap:wrap;min-width:0}.display-controls select{max-width:240px}footer button,footer select{font-size:12px}#message{line-height:1.6}#help{position:fixed;bottom:78px;left:26px;width:min(510px,calc(100vw - 52px));background:#252d37;border:1px solid #546270;border-radius:12px;padding:24px;box-shadow:0 15px 60px #0009;line-height:1.9;font-size:14px}#help p{color:#b3bfcd;font-size:12px}#help li{margin:6px 0}@media(max-width:900px){body{height:auto;min-height:100vh}main{grid-template-columns:1fr;overflow:visible}.current{flex:none;aspect-ratio:16/9}.notes-panel{min-height:450px}footer{flex-wrap:wrap}header{flex-wrap:wrap}}@media(max-height:750px) and (min-width:901px){header{padding:10px 20px}main{padding:15px 20px;gap:20px}.next-row{margin-top:14px;gap:15px}.navigation{gap:7px}.navigation p{display:none}.notes-panel{padding:15px}footer{padding:10px 20px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}`;
+  }
+
+  // Runs in the popup's own realm, so it can reconnect after the audience reloads.
+  // Same-origin opener RPC needs no server, broadcast channels, or storage events.
+  function presenterClient(annotationSurface) {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    let api = null, state = null, stamp = '', currentIndex = -1, screens = [], fontSize = 24;
+    let connectedAPI = null, visualStamp = '';
+    let inkModel=null;
+    const inkBoard=annotationSurface(document,()=>{
+      const frame=$('current'),r=frame.getBoundingClientRect(),size=frame._size||{width:1920,height:1080};
+      const scale=Math.min(r.width/size.width,r.height/size.height);
+      return {left:r.left+(r.width-size.width*scale)/2,top:r.top+(r.height-size.height*scale)/2,width:size.width*scale,height:size.height*scale};
+    },event=>{if(api)api.inkInput(event);},'presenter');
+    function renderInk(value){
+      inkModel=value;inkBoard.render(value);
+      for(const [id,mode] of [['toolOff','off'],['toolLaser','laser'],['toolPen','pen']])$(id).setAttribute('aria-pressed',String(value.mode===mode));
+    }
+    window.addEventListener('scroll',()=>inkBoard.layout(),true);
+    window.addEventListener('pagehide',()=>{try{api?.unsubscribeInk(window);}catch{}});
+    const message = text => { $('message').textContent = text; api?.renderPresenter?.(window, state); };
+    const editable = target => !!target.closest('textarea,input,select,[contenteditable]');
+    const formatTime = ms => {
+      const seconds = Math.floor(ms / 1000);
+      return (seconds >= 3600 ? String(Math.floor(seconds / 3600)).padStart(2,'0') + ':' : '') + String(Math.floor(seconds / 60) % 60).padStart(2,'0') + ':' + String(seconds % 60).padStart(2,'0');
+    };
+    const action = fn => {
+      try { if (!api) throw new Error('观众窗口未连接。'); fn(api); refresh(); }
+      catch (error) { message(error.message); }
+    };
+    function fit(frame) {
+      const size = frame._size;
+      const stage = frame.contentDocument?.querySelector('[data-fsp-stage]');
+      if (!size || !stage) return;
+      const scale = Math.min(frame.clientWidth / size.width, frame.clientHeight / size.height);
+      stage.style.setProperty('transform', `translate(${(frame.clientWidth-size.width*scale)/2}px,${(frame.clientHeight-size.height*scale)/2}px) scale(${scale})`, 'important');
+      inkBoard.layout();
+    }
+    ['current','next'].forEach(id => {
+      const frame = $(id);
+      frame.addEventListener('load', () => fit(frame));
+      new ResizeObserver(() => fit(frame)).observe(frame);
+    });
+    function preview(frame, snapshot) {
+      frame._size = snapshot;
+      if (!snapshot) { frame.srcdoc = ''; return; }
+      frame.srcdoc = snapshot.html;
+    }
+    function refresh() {
+      const lastAPI = api;
+      try {
+        if (!window.opener || window.opener.closed) throw new Error('closed');
+        api = window.opener.FrontendSlidesPresenter?.session;
+        if (!api) throw new Error('loading');
+        if (connectedAPI !== api) { api.connect(window); api.subscribeInk(window,renderInk); connectedAPI = api; stamp = ''; visualStamp = ''; }
+        state = api.state();
+        $('connection').textContent = '● 已连接'; $('connection').className = ''; $('connection').title='';
+        document.querySelectorAll('[data-needs-connection]').forEach(el => { el.disabled = false; });
+        $('timer').textContent = formatTime(state.elapsed);
+        $('timerToggle').textContent = state.running ? '暂停计时' : '开始计时';
+        $('blackBadge').hidden = !state.blank;
+        $('blank').setAttribute('aria-pressed', String(state.blank));
+        $('blank').textContent = state.blank ? '恢复画面 · B' : '黑屏 · B';
+        $('previous').disabled = state.index === 0;
+        $('forward').disabled = state.index === state.count - 1;
+        const nextStamp = state.id + ':' + state.revision;
+        if (nextStamp !== stamp) {
+          // Input saves synchronously. Never replace a focused editor's selection on its own save.
+          if (currentIndex !== state.index || document.activeElement !== $('notes')) {
+            if ($('notes').value !== state.notes[state.index]) $('notes').value = state.notes[state.index] || '';
+            if (currentIndex !== state.index) $('notes').scrollTop = 0;
+          }
+          currentIndex = state.index;
+          $('counter').textContent = `${state.index + 1} / ${state.count}`;
+          $('slideTitle').textContent = state.titles[state.index];
+          const labels = JSON.stringify(state.titles);
+          if ($('jump').dataset.labels !== labels) {
+            $('jump').replaceChildren(...state.titles.map((title, i) => new Option(`${i + 1} · ${title}`, i)));
+            $('jump').dataset.labels = labels;
+          }
+          $('jump').value = state.index;
+          const nextVisualStamp = state.id + ':' + state.visualRevision;
+          if (nextVisualStamp !== visualStamp) {
+            preview($('current'), api.snapshot(state.index));
+            preview($('next'), api.snapshot(state.index + 1));
+            visualStamp = nextVisualStamp;
+          }
+          $('end').hidden = state.index + 1 < state.count;
+          $('saveStatus').textContent = state.saved ? '讲稿自动保存于本浏览器' : '浏览器存储不可用，请保存 HTML 或导出讲稿';
+          stamp = nextStamp;
+        }
+      } catch (error) {
+        $('connection').title=error.message;
+        api = null; connectedAPI=null;
+        inkBoard.render({mode:'off',index:-1,inkRevision:0,strokes:[],laser:null,blank:true,width:1920,height:1080});
+        $('connection').textContent = '● 观众窗口已断开'; $('connection').className = 'offline';
+        document.querySelectorAll('[data-needs-connection]').forEach(el => { el.disabled = true; });
+      }
+      $('clock').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      (api || lastAPI)?.renderPresenter?.(window, api ? state : null);
+    }
+    ['previous','forward','jump','notes','blank','timerToggle','timerReset','exportNotes','exportHTML','fullscreen','toolOff','toolLaser','toolPen','clearInk'].forEach(id => $(id).setAttribute('data-needs-connection',''));
+    $('toolOff').onclick=()=>action(a=>a.setTool('off'));
+    $('toolLaser').onclick=()=>action(a=>a.setTool(inkModel?.mode==='laser'?'off':'laser'));
+    $('toolPen').onclick=()=>action(a=>a.setTool(inkModel?.mode==='pen'?'off':'pen'));
+    $('clearInk').onclick=()=>action(a=>a.clearInk());
+    $('previous').onclick = () => action(a => a.goTo(state.index - 1));
+    $('forward').onclick = () => action(a => a.goTo(state.index + 1));
+    $('jump').onchange = () => action(a => a.goTo(Number($('jump').value)));
+    $('blank').onclick = () => action(a => a.blank());
+    $('timerToggle').onclick = () => action(a => a.timer('toggle'));
+    $('timerReset').onclick = () => action(a => a.timer('reset'));
+    $('notes').addEventListener('input', () => {
+      if (api && currentIndex >= 0) api.saveNotes(currentIndex, $('notes').value);
+    });
+    $('smaller').onclick = () => { fontSize = Math.max(16, fontSize - 2); $('notes').style.fontSize = fontSize + 'px'; };
+    $('larger').onclick = () => { fontSize = Math.min(48, fontSize + 2); $('notes').style.fontSize = fontSize + 'px'; };
+    $('exportNotes').onclick = () => action(a => a.exportNotes());
+    $('exportHTML').onclick = () => action(a => a.exportHTML());
+    $('helpToggle').onclick = () => { $('help').hidden = !$('help').hidden; $('helpToggle').setAttribute('aria-expanded', String(!$('help').hidden)); };
+    $('screens').onclick = async () => {
+      if (!window.getScreenDetails) { message('此浏览器不支持自动选屏。请将原 slides 窗口拖到扩展屏，再在其中按 F。'); return; }
+      try {
+        const details = await window.getScreenDetails();
+        screens = Array.from(details.screens);
+        $('screenList').replaceChildren(...screens.map((screen, i) => new Option(screen.label || `显示器 ${i + 1} · ${screen.width}×${screen.height}`, i)));
+        $('screenList').hidden = false;
+        message('选择观众显示器后点“观众全屏”；本窗口留在电脑。');
+      } catch { message('未获得显示器权限。请手动拖动原 slides 窗口到扩展屏，在其中按 F。'); }
+    };
+    async function fullscreen() {
+      if (!api) return;
+      try { await api.fullscreen(screens[Number($('screenList').value)]); }
+      catch { message('浏览器限制远程全屏：请点击大屏上的 slides，再按 F；也可使用浏览器全屏菜单。'); }
+    }
+    $('fullscreen').onclick = fullscreen;
+    window.addEventListener('keydown', event => {
+      if (event.isComposing || editable(event.target) || event.metaKey || event.ctrlKey || event.altKey) return;
+      const key = event.key.toLowerCase();
+      if (!['arrowright','arrowdown','pagedown',' ','arrowleft','arrowup','pageup','home','end','b','f','l','d','escape'].includes(key)) return;
+      event.preventDefault();
+      if (event.repeat && ['b','f','l','d'].includes(key)) return;
+      if (key === 'f') { fullscreen(); return; }
+      action(a => {
+        if (['arrowright','arrowdown','pagedown',' '].includes(key)) a.goTo(state.index + 1);
+        else if (['arrowleft','arrowup','pageup'].includes(key)) a.goTo(state.index - 1);
+        else if (key === 'home') a.goTo(0);
+        else if (key === 'end') a.goTo(state.count - 1);
+        else if (key === 'b') a.blank();
+        else if (key === 'l') a.setTool(inkModel?.mode==='laser'?'off':'laser');
+        else if (key === 'd') a.setTool(inkModel?.mode==='pen'?'off':'pen');
+        else if (key === 'escape') a.setTool('off');
+      });
+    });
+    refresh();
+    setInterval(refresh, 200);
+  }
+  window.FrontendSlidesPresenter = {version:VERSION, mount};
+})();
+
+FrontendSlidesPresenter.mount(window.frontendSlidesPresenterAdapter);
+</script>
+<!-- frontend-slides-presenter:end -->
+</body></html>
