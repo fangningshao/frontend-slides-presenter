@@ -21,6 +21,8 @@ Other controllers need only equivalent callbacks. Indices are zero-based. `getIn
 
 Initialize after the controller and slide DOM. The runtime marks slide/stage elements for snapshots without changing layout or native input handlers. Slide order/count is fixed for one mounted session; reload after structural edits. Upstream can change class names or APIs: update this adapter and retest, without copying its controller or design system. No universal compatibility claim is made for future breaking changes.
 
+For localized presenter interfaces, the adapter may provide `renderPresenter(child, state)`. The runtime calls it synchronously after its own presenter refresh and status messages, so localized labels are applied before the browser paints. `child` is the presenter window; `state` is its current session state, or `null` on disconnection. Keep this hook synchronous and update existing UI elements without replacing their handlers. Do not run a separate timer to translate labels: competing timers cause the default and translated text to flash. The single-file demo includes nine interface dictionaries and independent notes-language selection. Close an already-open presenter and reopen it after updating the runtime so the popup loads the new client code.
+
 ## Notes
 
 ```html

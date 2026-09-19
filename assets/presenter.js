@@ -327,6 +327,12 @@
       },
       goTo(i) { if (!Number.isFinite(i)) return; adapter.goTo(Math.max(0, Math.min(slides().length - 1, Math.trunc(i)))); syncInkIndex(); revision++; persist(); },
       saveNotes, snapshot, exportNotes, exportHTML, open:openPresenter,
+      // Optional deck localization runs synchronously in the popup render cycle.
+      // Keep one owner for dynamic labels instead of competing translation timers.
+      renderPresenter(child, state) {
+        if (child.opener === window && typeof adapter.renderPresenter === 'function')
+          adapter.renderPresenter(child, state);
+      },
       blank(value = !blank) { setBlank(value); },
       timer(action) {
         if (action === 'reset') { elapsed = 0; started = Date.now(); }
@@ -394,7 +400,7 @@
     }
     window.addEventListener('scroll',()=>inkBoard.layout(),true);
     window.addEventListener('pagehide',()=>{try{api?.unsubscribeInk(window);}catch{}});
-    const message = text => { $('message').textContent = text; };
+    const message = text => { $('message').textContent = text; api?.renderPresenter?.(window, state); };
     const editable = target => !!target.closest('textarea,input,select,[contenteditable]');
     const formatTime = ms => {
       const seconds = Math.floor(ms / 1000);
@@ -423,6 +429,7 @@
       frame.srcdoc = snapshot.html;
     }
     function refresh() {
+      const lastAPI = api;
       try {
         if (!window.opener || window.opener.closed) throw new Error('closed');
         api = window.opener.FrontendSlidesPresenter?.session;
@@ -472,6 +479,7 @@
         document.querySelectorAll('[data-needs-connection]').forEach(el => { el.disabled = true; });
       }
       $('clock').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      (api || lastAPI)?.renderPresenter?.(window, api ? state : null);
     }
     ['previous','forward','jump','notes','blank','timerToggle','timerReset','exportNotes','exportHTML','fullscreen','toolOff','toolLaser','toolPen','clearInk'].forEach(id => $(id).setAttribute('data-needs-connection',''));
     $('toolOff').onclick=()=>action(a=>a.setTool('off'));
