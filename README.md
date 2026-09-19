@@ -4,10 +4,6 @@ An agent skill that adds speaker notes and a dual-window Presenter Mode to
 [Frontend Slides](https://github.com/zarazhangrui/frontend-slides) HTML
 presentations—without replacing the deck's design, animations, or navigation.
 
-## 📺 Watch the Walkthrough
-
-<!-- Reserved for a walkthrough video. -->
-
 ## What This Does
 
 **Frontend Slides Presenter** turns the original slides window into a clean
@@ -34,20 +30,26 @@ Everything remains local and can still be delivered as one portable HTML file.
 - **Laser and pen tools** — Point or draw in either window with synchronized,
 	per-slide annotations.
 - **No web runtime dependency** — The presenter runtime is embedded directly
-	into the deck.
-- **Native deck behavior preserved** — The existing slide controller remains
-	the source of truth for navigation, animations, editing, and export.
+    into the deck, which is pure frontend, without backend dependencies.
+- **Pluggable with your favourite frontend-slides skills** — This skill works
+    well together with your 1frontend-slides skill or your localized version.
 
 ## Installation
 
-Clone or copy this repository into the skills directory used by your coding
-agent. For a standalone Claude Code installation:
+Simply ask your coding agent: 
 
-```bash
-git clone <repository-url> ~/.claude/skills/frontend-slides-presenter
+```
+Help me install this skill: https://github.com/fangningshao/frontend-slides-presenter
 ```
 
-Other coding agents can use the repository directly. Ask the agent to start
+Alternatively: clone or copy this repository into the skills directory used by your coding
+agent. For example, for your Claude Code installation:
+
+```bash
+git clone https://github.com/fangningshao/frontend-slides-presenter ~/.claude/skills/frontend-slides-presenter
+```
+
+Coding agents can use the repository directly. Ask the agent to start
 from `SKILL.md`; it will load `references/integration.md`,
 `assets/presenter.js`, and `scripts/embed.py` when needed.
 
@@ -58,60 +60,44 @@ extended directly.
 
 ## Usage
 
-### Ask an Agent
+### 1. Creating a new slide
 
-Invoke the installed skill and describe the deck to create or update:
+Invoke the installed skill and describe the deck to create:
 
 ```text
 /frontend-slides-presenter
 
-> "Add presenter mode and speaker notes to my presentation.html"
+> "Help me create slides that introduces the CosyVoice3 architecture."
 ```
 
 The agent will:
 
-1. Create or inspect the Frontend Slides deck.
-2. Add a notes template to each slide.
-3. Connect Presenter Mode to the deck's existing controller.
-4. Embed the shipped presenter runtime into the output HTML.
-5. Open the result and verify navigation, notes, previews, and annotations.
+1. Search the web and collect materials if needed.
+2. Create frontend slides using the existing frontend-slides skill.
+3. Draft your presenter notes for each slide.
+4. Embed the presenter runtime into the output HTML to make it presentable.
 
-### Integrate Manually
 
-First, retain the deck's controller instance and expose the small adapter
-described in `references/integration.md`:
+### 2. Updating an existing frontend slide
 
-```js
-const presentation = new SlidePresentation();
-window.frontendSlidesPresenterAdapter = {
-	slides: () => Array.from(presentation.slides),
-	getIndex: () => presentation.currentSlide,
-	goTo: index => presentation.showSlide(index),
-	stage: presentation.stage
-};
+You can also use this skill with existing slides:
+
+```text
+/frontend-slides-presenter
+
+> "Here's my slides: demo.html. Here is my voice transcript: transcript.txt. Now embed it into my slides for a presenter mode."
 ```
 
-Add plain-text notes inside each slide:
+The agent will:
 
-```html
-<section class="slide" id="opening">
-	<h1>Build for the room.</h1>
-	<template data-presenter-notes>Pause, look at the audience, then begin.</template>
-</section>
-```
+1. Read your slides and your transcripts to get an overall understanding.
+2. Draft your presenter notes for each slide.
+3. Embed the presenter runtime into your original slides HTML to make it presentable.
 
-Then embed the presenter runtime:
-
-```bash
-python scripts/embed.py presentation.html presentation-with-presenter.html
-```
-
-The input and output paths may be the same for an intentional in-place update.
-Running the command again updates the existing marked runtime block instead of
-adding a duplicate.
 
 ## Presenting
 
+### Present locally with extended desktop
 1. Connect the projector and enable **extended desktop** rather than mirroring.
 2. Open the generated HTML file in a browser.
 3. Press **P** or click the Presenter control to open Presenter Mode.
@@ -119,11 +105,15 @@ adding a duplicate.
 	 the projector.
 5. Click the audience window and press **F** to enter fullscreen.
 
-> **Presenting online:** In Zoom, Microsoft Teams, Skype, Tencent Meeting, or
-> similar apps, press **P** to open the separate Presenter view, then share
-> only the original main slides window. Your audience sees the clean
-> presentation while you privately see notes, previews, timing, and controls.
+### Present online
 
+In Zoom, Microsoft Teams, Skype, Tencent Meeting, or similar apps:
+
+1. Press **P** to open the separate Presenter view. Now the presenter view and the main view are in different windows on your computer.
+2. Share only the original main slides window to your Zoom/Teams software.
+3. Your audience sees the clean presentation while you privately see notes and controls.
+
+### Shortkeys
 When presenting, use:
 
 | Key or control | Action |
@@ -137,9 +127,6 @@ When presenting, use:
 | Clear page annotations | Remove ink from the current slide only |
 | Save HTML | Export a copy containing the edited notes |
 
-<!-- Reserved for a Presenter Mode snapshot. -->
-
-<!-- Reserved for a laser/pen demonstration video. -->
 
 ## How It Works
 
@@ -162,8 +149,7 @@ HTML source.
 
 - A Frontend Slides presentation, or an agent capable of creating one
 - A modern browser that allows same-origin popup communication
-- Python 3 to run the embedding script
-- An extended display for the intended two-screen presentation workflow
+- Your local Python 3 to run the embedding script
 
 Automatic display selection and fullscreen depend on browser support and user
 permission. Manually moving the audience window to the external display is the
