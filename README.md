@@ -10,13 +10,13 @@ presentations—without replacing the deck's design, animations, or navigation.
 audience display and opens a separate presenter window for the speaker.
 Everything remains local and can still be delivered as one portable HTML file.
 
-<a href="demo/index.html" title="Open the multilingual Frontend Slides Presenter demo">
+<a href="https://fangningshao.github.io/frontend-slides-presenter/" title="Open the multilingual Frontend Slides Presenter demo">
 	<img src="demo/demo.png" alt="Frontend Slides Presenter audience and presenter windows" width="100%" />
 </a>
 
-> **[Open the multilingual HTML demo →](demo/index.html)** — switch the slides,
+> **[Open the multilingual live demo →](https://fangningshao.github.io/frontend-slides-presenter/)** — switch the slides,
 > presenter interface, and speaker notes among English, 中文, 日本語, 한국어,
-> Español, Français, Deutsch, العربية, and Português.
+> Español, Français, Deutsch, العربية, and Português. Built by this skill. Source in [demo/index.html](demo/index.html).
 
 ### Key Features
 
