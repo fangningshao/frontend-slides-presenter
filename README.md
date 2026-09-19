@@ -1,10 +1,10 @@
 # Frontend Slides Presenter
 
-An agent skill that adds speaker notes and a dual-window Presenter Mode to
-[Frontend Slides](https://github.com/zarazhangrui/frontend-slides) HTML
-presentations—without replacing the deck's design, animations, or navigation.
+An agent skill for creating **frontend slides with Presenter Mode**, including speaker notes, a laser pointer, and pen annotations. It builds upon the original [frontend-slides](https://github.com/zarazhangrui/frontend-slides) skill and works alongside it in your coding agent.
 
-## What This Does
+Add a presenter mode to any of your HTML presentations!
+
+## What This Skill Does
 
 **Frontend Slides Presenter** turns the original slides window into a clean
 audience display and opens a separate presenter window for the speaker.
@@ -18,27 +18,12 @@ Everything remains local and can still be delivered as one portable HTML file.
 > presenter interface, and speaker notes among English, 中文, 日本語, 한국어,
 > Español, Français, Deutsch, العربية, and Português. Built by this skill. Source in [demo/index.html](demo/index.html).
 
-### Key Features
 
-- **Two synchronized windows** — Keep the audience view on the projector and
-	Presenter Mode on the laptop.
-- **Per-slide speaker notes** — Edit notes while presenting, retain drafts in
-	browser storage, and save them into a portable HTML file.
-- **Current and next previews** — See where the talk is and what comes next.
-- **Presentation controls** — Navigate, jump to a slide, manage the timer,
-	change note size, and temporarily black out the audience display.
-- **Laser and pen tools** — Point or draw in either window with synchronized,
-	per-slide annotations.
-- **No web runtime dependency** — The presenter runtime is embedded directly
-    into the deck, which is pure frontend, without backend dependencies.
-- **Pluggable with your favourite frontend-slides skills** — This skill works
-    well together with your 1frontend-slides skill or your localized version.
+## How to install
 
-## Installation
+**Simply ask your coding agent:**
 
-Simply ask your coding agent: 
-
-```
+```markdown
 Help me install this skill: https://github.com/fangningshao/frontend-slides-presenter
 ```
 
@@ -144,6 +129,23 @@ Presenter previews are static snapshots. Live animations, video, and other
 interactive media continue to run in the audience window. Notes remain hidden
 from the visible presentation and print output, but they are present in the
 HTML source.
+
+### Key Features
+
+- **Two synchronized windows** — Keep the audience view on the projector and
+	Presenter Mode on the laptop.
+- **Per-slide speaker notes** — Edit notes while presenting, retain drafts in
+	browser storage, and save them into a portable HTML file.
+- **Current and next previews** — See where the talk is and what comes next.
+- **Presentation controls** — Navigate, jump to a slide, manage the timer,
+	change note size, and temporarily black out the audience display.
+- **Laser and pen tools** — Point or draw in either window with synchronized,
+	per-slide annotations.
+- **No web runtime dependency** — The presenter runtime is embedded directly
+    into the deck, which is pure frontend, without backend dependencies.
+- **Pluggable with your favourite frontend-slides skills** — This skill works
+    well together with your 1frontend-slides skill or your localized version.
+
 
 ## Requirements
 
